@@ -1,0 +1,7 @@
+C:\Users\mepla\AppData\Local\Temp\rider-publish4022742578783862316\SocialStrats.exe
+C:\Users\mepla\AppData\Local\Temp\rider-publish4022742578783862316\appsettings.Development.json
+C:\Users\mepla\AppData\Local\Temp\rider-publish4022742578783862316\appsettings.json
+C:\Users\mepla\AppData\Local\Temp\rider-publish4022742578783862316\SocialStrats.dll
+C:\Users\mepla\AppData\Local\Temp\rider-publish4022742578783862316\SocialStrats.deps.json
+C:\Users\mepla\AppData\Local\Temp\rider-publish4022742578783862316\SocialStrats.runtimeconfig.json
+C:\Users\mepla\AppData\Local\Temp\rider-publish4022742578783862316\SocialStrats.pdb

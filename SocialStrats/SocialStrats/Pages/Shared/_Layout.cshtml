@@ -1,0 +1,2175 @@
+﻿<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SocialStrats</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SocialStrats.styles.css" asp-append-version="true" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/favicon-32x32.png" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="16x16" href="~/favicon-16x16.png" asp-append-version="true" />
+    <link rel="apple-touch-icon" sizes="180x180" href="~/apple-touch-icon.png" asp-append-version="true" />
+
+
+    @* Allow pages to inject CSS (Leaflet, page styles, etc.) *@
+    @await RenderSectionAsync("Styles", required: false)
+
+    <style>
+        /* ================================================
+           ENHANCED ANIMATIONS & KEYFRAMES
+           ================================================ */
+
+        /* Plane following curved path with correct rotation */
+        @@keyframes plane-path-1 {
+            0% {
+                transform: translate(-100px, 100px) rotate(-135deg);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+            }
+            15% {
+                transform: translate(10vw, 60px) rotate(-110deg);
+            }
+            30% {
+                transform: translate(25vw, 20px) rotate(-85deg);
+            }
+            50% {
+                transform: translate(50vw, -20px) rotate(-55deg);
+            }
+            70% {
+                transform: translate(75vw, 10px) rotate(-30deg);
+            }
+            85% {
+                transform: translate(90vw, -30px) rotate(-45deg);
+            }
+            95% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(100vw + 100px), -50px) rotate(-45deg);
+                opacity: 0;
+            }
+        }
+
+        @@keyframes plane-path-2 {
+            0% {
+                transform: translate(calc(100vw + 100px), 50px) rotate(90deg);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+            }
+            15% {
+                transform: translate(85vw, 30px) rotate(110deg);
+            }
+            30% {
+                transform: translate(65vw, -10px) rotate(135deg);
+            }
+            50% {
+                transform: translate(45vw, 20px) rotate(165deg);
+            }
+            70% {
+                transform: translate(25vw, -30px) rotate(155deg);
+            }
+            85% {
+                transform: translate(10vw, 10px) rotate(125deg);
+            }
+            95% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-100px, -20px) rotate(135deg);
+                opacity: 0;
+            }
+        }
+
+        @@keyframes plane-path-3 {
+            0% {
+                transform: translate(-100px, 20px) rotate(-125deg);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+            }
+            20% {
+                transform: translate(15vw, -10px) rotate(-100deg);
+            }
+            35% {
+                transform: translate(35vw, 40px) rotate(-70deg);
+            }
+            50% {
+                transform: translate(50vw, 70px) rotate(-45deg);
+            }
+            65% {
+                transform: translate(70vw, 50px) rotate(-25deg);
+            }
+            80% {
+                transform: translate(85vw, 20px) rotate(-40deg);
+            }
+            95% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(calc(100vw + 100px), -10px) rotate(-45deg);
+                opacity: 0;
+            }
+        }
+
+        /* Falling clocks animation - slow like snow */
+        @@keyframes clock-fall-1 {
+            0% {
+                transform: translate(0, -50px) rotate(0deg);
+                opacity: 0;
+            }
+            5% {
+                opacity: 0.7;
+            }
+            40% {
+                opacity: 0.5;
+            }
+            70% {
+                opacity: 0.2;
+            }
+            100% {
+                transform: translate(-30px, calc(100vh + 100px)) rotate(180deg);
+                opacity: 0;
+            }
+        }
+
+        @@keyframes clock-fall-2 {
+            0% {
+                transform: translate(0, -50px) rotate(0deg);
+                opacity: 0;
+            }
+            5% {
+                opacity: 0.6;
+            }
+            35% {
+                opacity: 0.4;
+            }
+            65% {
+                opacity: 0.2;
+            }
+            100% {
+                transform: translate(40px, calc(100vh + 100px)) rotate(-200deg);
+                opacity: 0;
+            }
+        }
+
+        @@keyframes clock-fall-3 {
+            0% {
+                transform: translate(0, -50px) rotate(0deg);
+                opacity: 0;
+            }
+            5% {
+                opacity: 0.65;
+            }
+            38% {
+                opacity: 0.45;
+            }
+            68% {
+                opacity: 0.2;
+            }
+            100% {
+                transform: translate(-20px, calc(100vh + 100px)) rotate(220deg);
+                opacity: 0;
+            }
+        }
+
+        @@keyframes clock-fall-4 {
+            0% {
+                transform: translate(0, -50px) rotate(0deg);
+                opacity: 0;
+            }
+            5% {
+                opacity: 0.7;
+            }
+            42% {
+                opacity: 0.5;
+            }
+            72% {
+                opacity: 0.2;
+            }
+            100% {
+                transform: translate(25px, calc(100vh + 100px)) rotate(-180deg);
+                opacity: 0;
+            }
+        }
+
+        @@keyframes cloud-float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+            }
+            25% {
+                transform: translateY(-15px) translateX(30px);
+            }
+            75% {
+                transform: translateY(15px) translateX(-30px);
+            }
+        }
+
+        @@keyframes map-pin-drop {
+            0% {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+            60% {
+                transform: translateY(8px);
+            }
+            80% {
+                transform: translateY(-4px);
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @@keyframes gentle-float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+
+        @@keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(34, 197, 94, 0.5);
+            }
+        }
+
+        @@keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes fade-in-scale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @@keyframes route-draw {
+            from {
+                stroke-dashoffset: 2000;
+            }
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @@keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        @@keyframes rotate-slow {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ================================================
+           BASE STYLES
+           ================================================ */
+
+        body {
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            color: #0f172a;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background gradients with blue/green theme */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -20%;
+            width: 1000px;
+            height: 1000px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: gentle-float 20s ease-in-out infinite;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -40%;
+            left: -10%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.04) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: gentle-float 25s ease-in-out infinite reverse;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Cursor styles */
+        body, p, div, span, h1, h2, h3, h4, h5, h6, label { cursor: default; }
+        a, button, .btn { cursor: pointer; }
+        input, textarea, select, [contenteditable="true"] { cursor: text; }
+
+        main {
+            flex: 1;
+        }
+
+        /* ================================================
+           ENHANCED NAVIGATION
+           ================================================ */
+
+        .ss-navbar {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(30px) saturate(180%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03) !important;
+            padding: 20px 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .ss-navbar.scrolled {
+            padding: 12px 0;
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+        }
+
+        .ss-brand-container {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .ss-brand-container:hover {
+            transform: translateY(-2px);
+        }
+
+        .ss-brand-badge {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #3b82f6 0%, #22c55e 100%);
+            margin-right: 14px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            padding: 4px;
+        }
+
+        .ss-brand-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .ss-brand-badge::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        .ss-brand-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+        }
+
+        .scrolled .ss-brand-badge {
+            width: 42px;
+            height: 42px;
+        }
+
+        .ss-brand {
+            font-weight: 700;
+            font-size: 22px;
+            letter-spacing: -0.8px;
+            background: linear-gradient(135deg, #0f172a 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: all 0.3s ease;
+        }
+
+        .scrolled .ss-brand {
+            font-size: 20px;
+        }
+
+        .ss-pill {
+            background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            padding: 8px 16px;
+            font-weight: 500;
+            font-size: 13px;
+            color: #334155;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ss-pill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .ss-pill:hover::before {
+            left: 100%;
+        }
+
+        .ss-navlink {
+            font-weight: 500;
+            font-size: 15px;
+            color: #64748b !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 10px 18px !important;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .ss-navlink::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #22c55e);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .ss-navlink:hover {
+            color: #3b82f6 !important;
+            background: rgba(59, 130, 246, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .ss-navlink:hover::after {
+            width: 60%;
+        }
+
+        /* Navbar CTA Button */
+        .nav-cta {
+            background: linear-gradient(135deg, #3b82f6 0%, #22c55e 100%);
+            color: white !important;
+            padding: 10px 24px !important;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, #2563eb 0%, #16a34a 100%);
+        }
+
+        /* ================================================
+           ENHANCED FOOTER
+           ================================================ */
+
+        footer.ss-footer {
+            background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+            border-top: 1px solid #f1f5f9;
+            margin-top: 120px;
+            padding: 100px 0 60px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Plane jiggle (applied to inner span so it doesn't override path rotation) */
+        @@keyframes plane-jiggle {
+            0%, 100% { transform: translate(0,0) rotate(0deg); }
+            20%      { transform: translate(1px,-2px) rotate(-2deg); }
+            50%      { transform: translate(-1px,1px) rotate(2deg); }
+            80%      { transform: translate(1px,2px) rotate(-1deg); }
+        }
+
+        .footer-plane{
+            position:absolute;
+            left:-100px;
+            opacity:0;
+            pointer-events:none;
+            filter: drop-shadow(0 6px 14px rgba(0,0,0,0.12));
+        }
+
+        .footer-plane .plane-emoji{
+            display:inline-block;
+            transform-origin: 50% 50%;
+            animation: plane-jiggle 1.4s ease-in-out infinite;
+        }
+
+        /* More planes, varied paths/durations/delays */
+        .footer-plane-1{ top: 80px;  font-size: 34px; animation: plane-path-1 26s linear infinite; animation-delay: 0s; }
+        .footer-plane-2{ top: 200px; font-size: 28px; animation: plane-path-2 32s linear infinite; animation-delay: 5s; }
+        .footer-plane-3{ top: 140px; font-size: 30px; animation: plane-path-3 29s linear infinite; animation-delay: 11s; }
+        .footer-plane-4{ top: 120px; font-size: 26px; animation: plane-path-1 34s linear infinite; animation-delay: 15s; }
+        .footer-plane-5{ top: 220px; font-size: 24px; animation: plane-path-2 38s linear infinite; animation-delay: 20s; }
+
+
+        /* Falling clocks */
+        .falling-clock-1,
+        .falling-clock-2,
+        .falling-clock-3,
+        .falling-clock-4 {
+            position: absolute;
+            font-size: 28px;
+            pointer-events: none;
+        }
+
+        .falling-clock-1 {
+            left: 15%;
+            top: -50px;
+            animation: clock-fall-1 18s linear infinite;
+            animation-delay: 1s;
+        }
+
+        .falling-clock-2 {
+            left: 45%;
+            top: -50px;
+            animation: clock-fall-2 22s linear infinite;
+            animation-delay: 5s;
+        }
+
+        .falling-clock-3 {
+            left: 75%;
+            top: -50px;
+            animation: clock-fall-3 20s linear infinite;
+            animation-delay: 9s;
+        }
+
+        .falling-clock-4 {
+            left: 60%;
+            top: -50px;
+            animation: clock-fall-4 24s linear infinite;
+            animation-delay: 13s;
+        }
+
+        /* Floating clouds */
+        .footer-cloud-1,
+        .footer-cloud-2,
+        .footer-cloud-3 {
+            position: absolute;
+            font-size: 64px;
+            opacity: 0.06;
+            animation: cloud-float 40s ease-in-out infinite;
+        }
+
+        .footer-cloud-1 {
+            top: 60px;
+            right: 15%;
+            animation-delay: 0s;
+        }
+
+        .footer-cloud-2 {
+            top: 180px;
+            left: 20%;
+            animation-delay: 10s;
+            font-size: 48px;
+        }
+
+        .footer-cloud-3 {
+            top: 120px;
+            right: 40%;
+            animation-delay: 20s;
+            font-size: 56px;
+        }
+
+        /* Journey line decoration */
+        .journey-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            pointer-events: none;
+            opacity: 0.06;
+            overflow: visible;
+        }
+
+        .journey-line path {
+            stroke: url(#footerGradient);
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+            animation: route-draw 4s ease-out forwards;
+            filter: blur(0.5px);
+        }
+
+        /* Storytelling section */
+        .footer-story {
+            text-align: center;
+            margin-bottom: 80px;
+            padding: 0 20px;
+            animation: fade-in-up 0.8s ease-out;
+        }
+
+        .footer-story-icon {
+            font-size: 72px;
+            margin-bottom: 28px;
+            display: inline-block;
+            animation: gentle-float 4s ease-in-out infinite;
+        }
+
+        .footer-story h3 {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #0f172a 0%, #3b82f6 50%, #22c55e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 24px;
+            letter-spacing: -1.5px;
+            line-height: 1.2;
+        }
+
+        .footer-story p {
+            font-size: 20px;
+            color: #475569;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.7;
+            font-weight: 400;
+        }
+
+        /* Feature highlights */
+        .footer-highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 28px;
+            margin-bottom: 80px;
+        }
+
+        .highlight-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 32px;
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fade-in-scale 0.6s ease-out backwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.02) 0%, rgba(34, 197, 94, 0.02) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .highlight-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #3b82f6, #22c55e);
+            transform: scaleY(0);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .highlight-item:nth-child(1) { animation-delay: 0s; }
+        .highlight-item:nth-child(2) { animation-delay: 0.1s; }
+        .highlight-item:nth-child(3) { animation-delay: 0.2s; }
+        .highlight-item:nth-child(4) { animation-delay: 0.3s; }
+
+        .highlight-item:hover {
+            background: #ffffff;
+            border-color: rgba(59, 130, 246, 0.2);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.12);
+        }
+
+        .highlight-item:hover::before {
+            opacity: 1;
+        }
+
+        .highlight-item:hover::after {
+            transform: scaleY(1);
+        }
+
+        .highlight-icon-wrapper {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .highlight-item:hover .highlight-icon-wrapper {
+            background: linear-gradient(135deg, #3b82f6 0%, #22c55e 100%);
+            transform: scale(1.1) rotate(-5deg);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+        }
+
+        .highlight-icon {
+            animation: gentle-float 3s ease-in-out infinite;
+            display: block;
+        }
+
+        .highlight-item:nth-child(2) .highlight-icon { animation-delay: 0.5s; }
+        .highlight-item:nth-child(3) .highlight-icon { animation-delay: 1s; }
+        .highlight-item:nth-child(4) .highlight-icon { animation-delay: 1.5s; }
+
+        .highlight-content h5 {
+            font-weight: 700;
+            font-size: 18px;
+            color: #0f172a;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .highlight-text {
+            font-weight: 400;
+            font-size: 15px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Main footer content */
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 60px;
+            margin-bottom: 80px;
+        }
+
+        .footer-section {
+            animation: fade-in-up 0.8s ease-out backwards;
+        }
+
+        .footer-section:nth-child(1) { animation-delay: 0.2s; }
+        .footer-section:nth-child(2) { animation-delay: 0.3s; }
+        .footer-section:nth-child(3) { animation-delay: 0.4s; }
+
+        .footer-section h4 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 28px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .footer-section h4::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(180deg, #3b82f6, #22c55e);
+            border-radius: 2px;
+        }
+
+        .footer-section p {
+            color: #475569;
+            font-weight: 400;
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .footer-link {
+            color: #64748b;
+            font-weight: 500;
+            font-size: 15px;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            width: fit-content;
+            padding: 6px 0;
+            position: relative;
+        }
+
+        .footer-link::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 32px;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #22c55e);
+            transition: width 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: #3b82f6;
+            transform: translateX(6px);
+        }
+
+        .footer-link:hover::after {
+            width: calc(100% - 32px);
+        }
+
+        .footer-link .icon {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .footer-link:hover .icon {
+            transform: scale(1.2);
+        }
+
+        /* Developer card */
+        .developer-card {
+            background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+            border: 2px solid #bfdbfe;
+            border-radius: 24px;
+            padding: 36px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .developer-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+            animation: rotate-slow 30s linear infinite;
+        }
+
+        .developer-card::after {
+            content: '📍';
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            font-size: 24px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .developer-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2);
+            border-color: #60a5fa;
+        }
+
+        .developer-card:hover::after {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .developer-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dev-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #3b82f6 0%, #22c55e 100%);
+            color: #fff;
+            font-size: 22px;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .developer-card:hover .dev-badge {
+            transform: scale(1.1) rotate(-10deg);
+        }
+
+        .dev-name {
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .dev-role {
+            color: #3b82f6;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+        }
+
+        .social-link:hover {
+            color: #3b82f6;
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
+        }
+
+        .social-link .icon {
+            font-size: 18px;
+        }
+
+        /* Statistics section */
+        .footer-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 32px;
+            margin-bottom: 80px;
+            padding: 56px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(34, 197, 94, 0.03) 100%);
+            border-radius: 24px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6 0%, #22c55e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            display: block;
+            letter-spacing: -1px;
+        }
+
+        .stat-label {
+            font-size: 15px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* Footer bottom */
+        .footer-bottom {
+            border-top: 2px solid #f1f5f9;
+            padding-top: 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .copyright {
+            color: #94a3b8;
+            font-weight: 400;
+            font-size: 15px;
+        }
+
+        .copyright strong {
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .tech-stack {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tech-badge {
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .tech-badge:hover {
+            color: #3b82f6;
+            background: #ffffff;
+            border-color: #bfdbfe;
+            transform: translateY(-2px);
+        }
+
+        /* ================================================
+           RESPONSIVE DESIGN
+           ================================================ */
+
+        @@media (max-width: 768px) {
+        .footer-story h3 {
+            font-size: 32px;
+        }
+
+        .footer-story p {
+            font-size: 17px;
+        }
+
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 48px;
+        }
+
+        .footer-highlights {
+            grid-template-columns: 1fr;
+        }
+
+        .footer-stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            padding: 36px 24px;
+        }
+
+        .stat-number {
+            font-size: 36px;
+        }
+
+        .footer-bottom {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .footer-cloud-1,
+        .footer-cloud-2,
+        .footer-cloud-3 {
+            font-size: 32px;
+        }
+        }
+
+        /* ================================================
+           SCROLL PROGRESS INDICATOR
+           ================================================ */
+
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #22c55e);
+            z-index: 9999;
+            transition: width 0.1s ease;
+        }
+
+        /* Topbar layout (logo left, CTA right) */
+        .ss-topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:16px;
+        }
+
+        /* Make navbar look clean (no bootstrap spacing artifacts) */
+        .ss-navbar { margin-bottom: 0 !important; }
+
+        /* Brand: logo only, no box */
+        .ss-brand-badge--clean{
+            width: 72px;
+            height: 72px;
+            margin-right: 0;
+            padding: 0;
+            border-radius: 0;
+            background: transparent !important;
+            box-shadow: none !important;
+            overflow: visible;
+        }
+
+        /* Kill the shimmer overlay from the original badge */
+        .ss-brand-badge--clean::before{ display:none !important; }
+
+        /* Ensure the logo renders crisp and fills the badge area */
+        .ss-brand-badge--clean img{
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display:block;
+        }
+
+        /* Slightly smaller when scrolled */
+        .ss-navbar.scrolled .ss-brand-badge--clean{
+            width: 60px;
+            height: 60px;
+        }
+        /* =========================
+   NEW: Premium white navbar
+   ========================= */
+        .ss-nav2{
+            position: sticky;
+            top: 0;
+            z-index: 1100;
+            background: rgba(255,255,255,0.72);
+            backdrop-filter: blur(16px) saturate(160%);
+            border-bottom: 1px solid rgba(15,23,42,0.08);
+            transition: box-shadow .25s ease, background .25s ease, border-color .25s ease;
+        }
+        .ss-nav2.scrolled{
+            background: rgba(255,255,255,0.92);
+            box-shadow: 0 14px 40px rgba(2,6,23,0.08);
+            border-bottom-color: rgba(15,23,42,0.10);
+        }
+
+        .ss-nav2-inner{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap: 16px;
+            padding: 12px 0;
+        }
+
+        .ss-brand2{
+            display:flex;
+            align-items:center;
+            gap: 12px;
+            text-decoration:none;
+            min-width: 0;
+        }
+        .ss-brand2-logo{
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            padding: 7px;
+            background: #fff;
+            border: 1px solid rgba(15,23,42,0.10);
+            box-shadow: 0 10px 24px rgba(2,6,23,0.06);
+            object-fit: contain;
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .ss-brand2:hover .ss-brand2-logo{
+            transform: translateY(-1px);
+            box-shadow: 0 14px 34px rgba(2,6,23,0.10);
+        }
+
+        .ss-brand2-text{ line-height: 1.05; }
+        .ss-brand2-name{
+            font-weight: 800;
+            letter-spacing: -0.2px;
+            color: #0f172a;
+            font-size: 20px;
+        }
+        .ss-brand2-tag{
+            margin-top: 2px;
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Links + CTA */
+        .ss-nav2-right{
+            display:flex;
+            align-items:center;
+            justify-content:flex-end;
+            gap: 14px;
+            width: 100%;
+        }
+        .ss-nav2-links{
+            display:flex;
+            align-items:center;
+            gap: 6px;
+            margin-right: 4px;
+        }
+        .ss-nav2-link{
+            text-decoration:none;
+            color: #334155;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            transition: background .18s ease, transform .18s ease, color .18s ease;
+        }
+        .ss-nav2-link:hover{
+            background: rgba(2,6,23,0.04);
+            transform: translateY(-1px);
+            color: #0f172a;
+        }
+
+        .ss-nav2-cta{
+            display:flex;
+            align-items:center;
+            gap: 10px;
+        }
+        .ss-chip{
+            display:inline-flex;
+            align-items:center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 650;
+            color:#334155;
+            background:#ffffff;
+            border:1px solid rgba(15,23,42,0.10);
+            box-shadow: 0 10px 24px rgba(2,6,23,0.06);
+        }
+
+        .ss-btn{
+            appearance:none;
+            border: 1px solid rgba(15,23,42,0.10);
+            background:#fff;
+            color:#0f172a;
+            border-radius: 14px;
+            padding: 10px 14px;
+            font-weight: 750;
+            font-size: 14px;
+            transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+        }
+        .ss-btn:hover{
+            transform: translateY(-1px);
+            box-shadow: 0 14px 34px rgba(2,6,23,0.10);
+        }
+        .ss-btn-primary{
+            border: none;
+            color: #fff;
+            background: linear-gradient(135deg, #3b82f6 0%, #22c55e 100%);
+            padding: 10px 16px;
+        }
+
+        /* =========================
+   Mobile toggle (premium hamburger)
+   ========================= */
+        .ss-nav2-toggle{
+            width: 46px;
+            height: 46px;
+            border-radius: 16px;
+            border: 1px solid rgba(15,23,42,0.12);
+            background: rgba(255,255,255,0.92);
+            box-shadow: 0 12px 30px rgba(2,6,23,0.10);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .ss-nav2-toggle:hover{
+            transform: translateY(-1px);
+            box-shadow: 0 16px 40px rgba(2,6,23,0.14);
+            border-color: rgba(15,23,42,0.16);
+        }
+        .ss-nav2-toggle:active{ transform: translateY(0); }
+
+        .ss-burger{
+            width: 20px;
+            height: 14px;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+        }
+        .ss-burger .bar{
+            height: 2px;
+            width: 100%;
+            border-radius: 3px;
+            background: #0f172a;
+            opacity: .88;
+            transform-origin: 50% 50%;
+            transition: transform .18s ease, opacity .18s ease, width .18s ease;
+        }
+
+        /* Open state -> turns into an X */
+        .ss-nav2-toggle.is-open .ss-burger .bar:nth-child(1){
+            transform: translateY(6px) rotate(45deg);
+        }
+        .ss-nav2-toggle.is-open .ss-burger .bar:nth-child(2){
+            opacity: 0;
+            width: 0;
+        }
+        .ss-nav2-toggle.is-open .ss-burger .bar:nth-child(3){
+            transform: translateY(-6px) rotate(-45deg);
+        }
+
+        /* =====================================
+           Mobile menu panel: prettier, cleaner
+           ===================================== */
+        @@media (max-width: 991.98px){
+        /* Panel container */
+        .ss-nav2-right{
+            margin-top: 12px;
+            padding: 14px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.92);
+            border: 1px solid rgba(15,23,42,0.10);
+            box-shadow: 0 22px 60px rgba(2,6,23,0.14);
+            backdrop-filter: blur(16px) saturate(160%);
+            display:flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+
+        /* Menu links: 2 columns on wider phones, 1 column on small */
+        .ss-nav2-links{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            margin: 0;
+        }
+            @@media (max-width: 420px){
+        .ss-nav2-links{ grid-template-columns: 1fr; }
+        }
+
+        /* Link cards */
+        .ss-nav2-link{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap: 10px;
+            text-align:center;
+            padding: 12px 12px;
+            border-radius: 16px;
+            background: rgba(2,6,23,0.03);
+            border: 1px solid rgba(15,23,42,0.08);
+            box-shadow: 0 10px 22px rgba(2,6,23,0.06);
+            transition: transform .18s ease, background .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .ss-nav2-link:hover{
+            background: rgba(2,6,23,0.06);
+            transform: translateY(-1px);
+            box-shadow: 0 14px 30px rgba(2,6,23,0.10);
+            border-color: rgba(15,23,42,0.12);
+        }
+        .ss-nav2-link:active{ transform: translateY(0); }
+
+        /* Add icons without changing HTML */
+        .ss-nav2-link[href="#search"]::before{ content:"⚙️"; font-size: 15px; }
+        .ss-nav2-link[href="#deals"]::before{ content:"💸"; font-size: 15px; }
+        .ss-nav2-link[href="#analytics"]::before{ content:"📊"; font-size: 15px; }
+        .ss-nav2-link[href="#map"]::before{ content:"🗺️"; font-size: 15px; }
+
+        /* CTA row */
+        .ss-nav2-cta{
+            display:flex;
+            gap: 10px;
+            width: 100%;
+        }
+        .ss-nav2-cta .ss-btn{
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Smooth “panel appears” feel when opened */
+        #ssNav2.show .ss-nav2-right{
+            animation: ssMenuPop .18s ease-out both;
+            transform-origin: top;
+        }
+        @@keyframes ssMenuPop{
+            from{ opacity: 0; transform: translateY(-6px) scale(0.99); }
+            to{ opacity: 1; transform: translateY(0) scale(1); }
+        }
+        }
+
+
+        /* =====================================
+    NEW: Mobile nav panel + link layout
+    ===================================== */
+
+        /* Brand sizing tweaks for mobile (keeps "SocialStrats" clean) */
+        @@media (max-width: 575.98px){
+            .ss-brand2{ gap: 10px; }
+            .ss-brand2-logo{ width: 34px; height: 34px; padding: 6px; border-radius: 12px; }
+            .ss-brand2-name{ font-size: 15px; white-space: nowrap; }
+        }
+        @@media (min-width: 576px){
+            .ss-brand2-name{ font-size: 16px; }
+        }
+
+        /* Desktop: keep links inline (your base styles already do this, but this is explicit) */
+        @@media (min-width: 992px){
+            .ss-nav2-links{
+                display:flex;
+                align-items:center;
+                gap: 6px;
+                margin-right: 6px;
+            }
+        }
+
+        /* Mobile: make the collapse look like a designed dropdown panel */
+        @@media (max-width: 991.98px){
+            .ss-nav2-right{
+                margin-top: 12px;
+                border-radius: 18px;
+                background: rgba(255,255,255,0.92);
+                border: 1px solid rgba(15,23,42,0.10);
+                box-shadow: 0 18px 50px rgba(2,6,23,0.12);
+                backdrop-filter: blur(14px) saturate(160%);
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .ss-nav2-links{
+                display:grid;
+                grid-template-columns: 1fr 1fr;
+                padding: 0;
+                margin: 0;
+                background: transparent;
+                border: 0;
+                width: 100%;
+            }
+
+            .ss-nav2-link{
+                text-align:center;
+                border-radius: 14px;
+                background: rgba(2,6,23,0.03);
+                border: 1px solid rgba(15,23,42,0.08);
+            }
+
+            .ss-nav2-link:hover{
+                background: rgba(2,6,23,0.06);
+                transform: translateY(-1px);
+            }
+
+            .ss-nav2-cta{
+                display:flex;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .ss-nav2-cta .ss-btn{
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+        }
+
+        /* Optional: stronger tap feedback */
+        .ss-nav2-link:active,
+        .ss-btn:active{
+            transform: translateY(0);
+        }
+
+
+        /* =========================
+           Footer brand lockup
+           ========================= */
+        .ss-footer-brand{
+            display:flex;
+            align-items:center;
+            gap: 12px;
+        }
+        .ss-footer-brand img{
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            padding: 7px;
+            background: #fff;
+            border: 1px solid rgba(15,23,42,0.10);
+            box-shadow: 0 10px 24px rgba(2,6,23,0.06);
+            object-fit: contain;
+        }
+        .ss-footer-brand .name{
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color:#0f172a;
+            line-height: 1.05;
+        }
+        .ss-footer-brand .meta{
+            margin-top: 2px;
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+
+        /* Mobile-only inline nav links (plain text) */
+        .ss-nav2-links--mobileonly{
+            display:flex;
+            align-items:center;
+            justify-content:flex-end;
+            gap: 5px;
+            flex-wrap: wrap;       /* allows wrapping on tiny screens */
+        }
+
+        .ss-nav2-link--text{
+            padding: 0;            /* no bubble */
+            margin: 0;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            font-weight: 650;
+            font-size: 14px;
+            color: #0f172a;
+            text-decoration: none;
+            opacity: .92;
+        }
+
+        .ss-nav2-link--text:hover{
+            opacity: 1;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .ss-nav2-sep{
+            opacity: .45;
+            user-select: none;
+        }
+
+        /* =====================================
+   Language picker (flags)
+   ===================================== */
+        .ss-lang { position: relative; display: inline-block; }
+
+        .ss-lang-btn{
+            display:flex; align-items:center; gap:10px;
+            padding:8px 10px;
+            border: 1px solid rgba(15,23,42,0.10);
+            background: rgba(255,255,255,0.92);
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #0f172a;
+            box-shadow: 0 10px 24px rgba(2,6,23,0.06);
+        }
+
+        .ss-flag{
+            display:inline-flex;
+            width:22px; height:16px;
+            border-radius: 3px;
+            overflow:hidden;
+        }
+
+        .ss-lang-caret{ opacity:.65; }
+
+        .ss-lang-menu{
+            position:absolute;
+            right:0;
+            top: calc(100% + 8px);
+            min-width: 180px;
+            background: #fff;
+            border: 1px solid rgba(15,23,42,0.10);
+            border-radius: 14px;
+            box-shadow: 0 22px 60px rgba(2,6,23,0.14);
+            padding: 6px;
+            z-index: 2000;
+        }
+
+        .ss-lang-item{
+            width:100%;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding: 10px 10px;
+            border: 0;
+            background: transparent;
+            border-radius: 12px;
+            text-align: left;
+            cursor: pointer;
+            font-weight: 650;
+            color: #0f172a;
+        }
+
+        .ss-lang-item:hover{ background: rgba(2,6,23,0.04); }
+
+        /* Ensure navbar is above the page (incl. map/leaflet layers) */
+        .ss-nav2{
+            z-index: 99999 !important;
+            overflow: visible !important;
+        }
+
+        /* Prevent any inner wrappers from clipping the dropdown */
+        .ss-nav2-inner,
+        .ss-nav2 .container-fluid{
+            overflow: visible !important;
+        }
+
+        /* Language dropdown: force top-most */
+        .ss-lang{ position: relative; z-index: 100000 !important; }
+
+        .ss-lang-menu{
+            z-index: 100001 !important;
+        }
+        /* Fix: main content was painting over the header because of "body > * { z-index: 1 }" */
+        body > header,
+        body > .ss-header,
+        .ss-nav2{
+            position: relative;
+            z-index: 20000 !important;
+        }
+
+        /* Keep the rest of the page below the header */
+        body > .container-fluid,
+        body > main,
+        body > footer{
+            position: relative;
+            z-index: 1 !important;
+        }
+
+        /* Dropdown itself */
+        .ss-lang-menu{ z-index: 20001 !important; }
+
+        /* Mobile: show only the flag in the language button (no text) */
+        @@media (max-width: 720px){
+        .ss-lang-btn .ss-lang-label{ display:none !important; }
+        .ss-lang-btn{
+            padding: 10px 12px !important; /* tighter since no text */
+            gap: 0 !important;
+        }
+        .ss-lang-btn .ss-lang-caret{
+            margin-left: 8px; /* keep a small caret, or hide it too */
+        }
+        }
+        /* Mobile inline nav: tighter emoji ↔ text spacing */
+        .ss-nav2-links--mobileonly{
+            gap: 4px;                 /* was 5px – tighter */
+        }
+
+        .ss-nav2-link--text{
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;                 /* KEY: emoji-to-text spacing */
+            line-height: 1;           /* removes vertical font padding */
+            font-size: 13px;          /* slightly smaller for fit */
+            padding: 0;
+        }
+
+
+    </style>
+</head>
+
+<body>
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress" id="scrollProgress"></div>
+@using System.Globalization
+@{
+    // Uses your existing URL convention: /Index, /Index.sk, /Index.de
+    var p = (Context.Request.Path.Value ?? "").ToLowerInvariant();
+    var lang = p.EndsWith(".sk") ? "sk" : (p.EndsWith(".de") ? "de" : "en");
+
+    // Keep logo + "Get Started" pointing to the current language home
+    var homeHref = lang == "sk" ? "/Index.sk" : (lang == "de" ? "/Index.de" : "/Index");
+}
+
+<header>
+    <header class="ss-header">
+        <header class="ss-header">
+            <nav class="ss-nav2" id="mainNav">
+    <div class="container-fluid px-3 px-md-4">
+        <div class="ss-nav2-inner">
+            <a class="ss-brand2"
+               href="@homeHref"
+               aria-label="@I18n.T(lang, "SocialStrats Home", "SocialStrats domov", "SocialStrats Startseite")">
+                <img class="ss-brand2-logo" src="~/logo2.png" alt="@I18n.T(lang, "SocialStrats logo", "Logo SocialStrats", "SocialStrats-Logo")" />
+                <div class="ss-brand2-text">
+                    <div class="ss-brand2-name">SocialStrats</div>
+                </div>
+            </a>
+
+            <div class="ms-lg-auto d-lg-none">
+                <div class="ss-nav2-links ss-nav2-links--mobileonly" aria-label="@I18n.T(lang, "Primary", "Hlavné", "Primär")">
+                    <a class="ss-nav2-link ss-nav2-link--text js-navlink" href="#search">
+                        @I18n.T(lang, "Opt", "Opt", "Opt")
+                    </a>
+                    <a class="ss-nav2-link ss-nav2-link--text js-navlink" href="#deals">
+                        @I18n.T(lang, "Hot", "Hit", "Hit")
+                    </a>
+                    <a class="ss-nav2-link ss-nav2-link--text js-navlink" href="#map">
+                        @I18n.T(lang, "Map", "Map", "Map")
+                    </a>
+                </div>
+            </div>
+
+            <div class="ms-auto d-flex align-items-center">
+                <div class="ss-lang">
+                    <button class="ss-lang-btn" type="button" aria-haspopup="menu" aria-expanded="false" data-lang-btn>
+                        <span class="ss-flag" aria-hidden="true">
+                            @if (lang == "sk") { @Html.Raw(Flags.SkSvg) }
+                            else if (lang == "de") { @Html.Raw(Flags.DeSvg) }
+                            else { @Html.Raw(Flags.EnSvg) }
+                        </span>
+                        <span class="ss-lang-label">
+                            @(lang == "sk" ? "Slovenčina" : lang == "de" ? "Deutsch" : "English")
+                        </span>
+                        <span class="ss-lang-caret" aria-hidden="true">▾</span>
+                    </button>
+
+                    <div class="ss-lang-menu" role="menu" data-lang-menu hidden>
+                        <a class="ss-lang-item" role="menuitem" href="/Index">
+                            <span class="ss-flag" aria-hidden="true">@Html.Raw(Flags.EnSvg)</span>
+                            <span>English</span>
+                        </a>
+
+                        <a class="ss-lang-item" role="menuitem" href="/Index.sk">
+                            <span class="ss-flag" aria-hidden="true">@Html.Raw(Flags.SkSvg)</span>
+                            <span>Slovenčina</span>
+                        </a>
+
+                        <a class="ss-lang-item" role="menuitem" href="/Index.de">
+                            <span class="ss-flag" aria-hidden="true">@Html.Raw(Flags.DeSvg)</span>
+                            <span>Deutsch</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</nav>
+
+
+        </header>
+
+    </header>
+
+</header>
+
+<div class="container-fluid px-3 px-md-4">
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+</div>
+
+<footer class="ss-footer">
+    <!-- Animated planes (outer follows path + rotates, inner jiggles) -->
+
+    <!-- Falling clocks -->
+    <div class="falling-clock-1">🕐</div>
+    <div class="falling-clock-2">💰</div>
+    <div class="falling-clock-3">🕒</div>
+    <div class="falling-clock-4">💰</div>
+
+    <!-- Floating clouds -->
+    <div class="footer-cloud-1">☁️</div>
+    <div class="footer-cloud-2">☁️</div>
+    <div class="footer-cloud-3">☁️</div>
+
+    <!-- Journey line SVG -->
+    <svg class="journey-line" viewBox="0 0 1400 300" preserveAspectRatio="none">
+        <defs>
+            <linearGradient id="footerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#22c55e;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <path d="M 0,150 Q 200,50 400,150 T 800,150 Q 1000,100 1200,150 T 1400,150" />
+    </svg>
+
+    <div class="container-fluid px-3 px-md-4">
+
+        <!-- Storytelling Header -->
+        <div class="footer-story">
+            <div class="footer-story-icon">🌍</div>
+            <h3>
+                @Html.Raw(I18n.T(
+                    lang,
+                    "Travel Smarter.<br/>Save Bigger.",
+                    "Cestuj múdrejšie.<br/>Ušetri viac.",
+                    "Clever reisen.<br/>Mehr sparen."
+                ))
+            </h3>
+            <p>
+                @I18n.T(
+                    lang,
+                    "We're building the future of flight discovery. Real-time pricing, stunning maps, killer deals — all designed to get you exploring Europe without breaking the bank.",
+                    "Staviame budúcnosť hľadania letov. Ceny v reálnom čase, krásne mapy, top ponuky — všetko navrhnuté tak, aby si mohol objavovať Európu bez zbytočných výdavkov.",
+                    "Wir bauen die Zukunft der Flugsuche. Echtzeitpreise, wunderschöne Karten und starke Deals — damit du Europa entdecken kannst, ohne zu viel zu zahlen."
+                )
+            </p>
+        </div>
+
+        <!-- Statistics -->
+        <div class="footer-stats">
+            <div class="stat-item">
+                <span class="stat-number">50K+</span>
+                <span class="stat-label">@I18n.T(lang, "Flight Routes", "Letové trasy", "Flugrouten")</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">100+</span>
+                <span class="stat-label">@I18n.T(lang, "Cities", "Mestá", "Städte")</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">Live</span>
+                <span class="stat-label">@I18n.T(lang, "Price Updates", "Aktualizácie cien", "Preis-Updates")</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">24/7</span>
+                <span class="stat-label">@I18n.T(lang, "Always On", "Vždy aktívne", "Immer verfügbar")</span>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="footer-highlights">
+            <div class="highlight-item">
+                <div class="highlight-icon-wrapper"><span class="highlight-icon">⚡</span></div>
+                <div class="highlight-content">
+                    <h5>@I18n.T(lang, "Lightning Fast", "Bleskovo rýchle", "Blitzschnell")</h5>
+                    <p class="highlight-text">@I18n.T(lang, "Search thousands of routes in seconds", "Vyhľadaj tisíce trás za sekundy", "Tausende Routen in Sekunden")</p>
+                </div>
+            </div>
+
+            <div class="highlight-item">
+                <div class="highlight-icon-wrapper"><span class="highlight-icon">🗺️</span></div>
+                <div class="highlight-content">
+                    <h5>@I18n.T(lang, "Beautiful Maps", "Krásne mapy", "Schöne Karten")</h5>
+                    <p class="highlight-text">@I18n.T(lang, "Interactive visualization of every route", "Interaktívna vizualizácia každej trasy", "Interaktive Visualisierung jeder Route")</p>
+                </div>
+            </div>
+
+            <div class="highlight-item">
+                <div class="highlight-icon-wrapper"><span class="highlight-icon">📊</span></div>
+                <div class="highlight-content">
+                    <h5>@I18n.T(lang, "Smart Insights", "Inteligentné prehľady", "Smarte Einblicke")</h5>
+                    <p class="highlight-text">@I18n.T(lang, "Find the best value for your money", "Nájdi najlepšiu hodnotu za svoje peniaze", "Bestes Preis-Leistungs-Verhältnis finden")</p>
+                </div>
+            </div>
+
+            <div class="highlight-item">
+                <div class="highlight-icon-wrapper"><span class="highlight-icon">🎯</span></div>
+                <div class="highlight-content">
+                    <h5>@I18n.T(lang, "Perfect Filters", "Perfektné filtre", "Perfekte Filter")</h5>
+                    <p class="highlight-text">@I18n.T(lang, "Sort by price, distance, or value", "Triediť podľa ceny, vzdialenosti alebo hodnoty", "Sortiere nach Preis, Distanz oder Wert")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Content -->
+        <div class="footer-content">
+            <!-- About -->
+            <div class="footer-section">
+                <h4>@I18n.T(lang, "Why Us", "Prečo my", "Warum wir")</h4>
+                <p>
+                    @I18n.T(
+                        lang,
+                        "Travel shouldn't cost a fortune. We're on a mission to make European adventures accessible to everyone through smart tech and killer design.",
+                        "Cestovanie nemusí stáť veľa. Našou misiou je sprístupniť európske dobrodružstvá každému vďaka smart technológiám a špičkovému dizajnu.",
+                        "Reisen sollte kein Vermögen kosten. Unsere Mission: Europa-Abenteuer für alle zugänglich machen — mit smarter Technik und starkem Design."
+                    )
+                </p>
+                <div class="footer-links">
+                    <a class="footer-link" href="@homeHref">
+                        <span class="icon">🚀</span> @I18n.T(lang, "Get Started", "Začať", "Loslegen")
+                    </a>
+                    <a class="footer-link" asp-area="" asp-page="/Privacy">
+                        <span class="icon">🔒</span> @I18n.T(lang, "Privacy Policy", "Ochrana súkromia", "Datenschutz")
+                    </a>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="footer-section">
+                <h4>@I18n.T(lang, "What We Do", "Čo robíme", "Was wir tun")</h4>
+                <div class="footer-links">
+                    <span class="footer-link"><span class="icon">💰</span> @I18n.T(lang, "Best price per km", "Najlepšia cena za km", "Bester Preis pro km")</span>
+                    <span class="footer-link"><span class="icon">✈️</span> @I18n.T(lang, "Live flight tracking", "Živé sledovanie letov", "Live-Flugtracking")</span>
+                    <span class="footer-link"><span class="icon">🔥</span> @I18n.T(lang, "Hot deals first", "Najprv top ponuky", "Top-Deals zuerst")</span>
+                    <span class="footer-link"><span class="icon">📱</span> @I18n.T(lang, "Works everywhere", "Funguje všade", "Funktioniert überall")</span>
+                    <span class="footer-link"><span class="icon">⚡</span> @I18n.T(lang, "Instant results", "Okamžité výsledky", "Sofortige Ergebnisse")</span>
+                    <span class="footer-link"><span class="icon">🎨</span> @I18n.T(lang, "Clean interface", "Čisté rozhranie", "Klares Interface")</span>
+                </div>
+            </div>
+
+            <!-- Developer -->
+            <div class="footer-section">
+                <div class="developer-card">
+                    <h4>
+                        <span class="dev-badge">👨‍💻</span>
+                        <span class="dev-name">Pavol Lukačka</span>
+                    </h4>
+                    <div class="dev-role">@I18n.T(lang, "Founder & Developer", "Zakladateľ & vývojár", "Gründer & Entwickler")</div>
+
+                    <div class="social-links">
+                        <a href="https://github.com/PavolLukacka..." target="_blank" rel="noopener noreferrer" class="social-link">
+                            <span class="icon">💻</span> @I18n.T(lang, "Visit my GitHub", "Navštív môj GitHub", "Mein GitHub besuchen")
+                        </a>
+                        <a href="https://github.com/PavolLukacka..." target="_blank" rel="noopener noreferrer" class="social-link">
+                            <span class="icon">☕</span> @I18n.T(lang, "Buy me a coffee❤️", "Kúp mi kávu❤️", "Spendier mir einen Kaffee❤️")
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom -->
+        <div class="footer-bottom">
+            <div class="copyright">
+                &copy; @DateTime.UtcNow.Year <strong>SocialStrats</strong> • @I18n.T(lang, "Built by", "Vytvoril", "Erstellt von") <strong>Pavol Lukačka</strong>
+            </div>
+
+            <div class="tech-stack">
+                <span class="tech-badge">⚙️ ASP.NET</span>
+                <span class="tech-badge">🗺️ Leaflet</span>
+                <span class="tech-badge">🎨 Bootstrap</span>
+                <span class="tech-badge">✈️ Ryanair</span>
+            </div>
+        </div>
+
+    </div>
+</footer>
+
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    // Navbar scroll effect
+    window.addEventListener('scroll', function() {
+        const navbar = document.getElementById('mainNav');
+        const scrollProgress = document.getElementById('scrollProgress');
+
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+
+        // Update scroll progress
+        const windowHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (window.scrollY / windowHeight) * 100;
+        scrollProgress.style.width = scrolled + '%';
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Language dropdown open/close
+    (function () {
+        const btn = document.querySelector('[data-lang-btn]');
+        const menu = document.querySelector('[data-lang-menu]');
+        if (!btn || !menu) return;
+
+        function close() {
+            menu.hidden = true;
+            btn.setAttribute('aria-expanded', 'false');
+        }
+        function toggle() {
+            const isOpen = !menu.hidden;
+            menu.hidden = isOpen;
+            btn.setAttribute('aria-expanded', String(!isOpen));
+        }
+
+        btn.addEventListener('click', (e) => { e.preventDefault(); toggle(); });
+
+        document.addEventListener('click', (e) => {
+            if (!menu.hidden && !e.target.closest('.ss-lang')) close();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') close();
+        });
+    })();
+
+
+    // Close mobile nav after clicking any section link or CTA
+        document.addEventListener('click', function (e) {
+        const a = e.target.closest('a.js-navlink');
+        if (!a) return;
+
+        const nav = document.getElementById('ssNav2');
+        if (!nav) return;
+
+        if (nav.classList.contains('show')) {
+        const bs = bootstrap.Collapse.getOrCreateInstance(nav);
+        bs.hide();
+            // Close the menu when clicking a language link (so it doesn't stay open during navigation)
+            menu.addEventListener('click', (e) => {
+                const link = e.target.closest('a.ss-lang-item');
+                if (link) close();
+            });
+
+        }
+    });
+        
+
+</script>
+@functions {
+    public static class Flags
+    {
+        // English flag (UK). If you prefer US, say so and I’ll swap it.
+        public const string EnSvg = @"<svg viewBox='0 0 60 40' width='22' height='16' xmlns='http://www.w3.org/2000/svg'>
+<rect width='60' height='40' fill='#012169'/>
+<path d='M0 0 L60 40 M60 0 L0 40' stroke='#FFF' stroke-width='8'/>
+<path d='M0 0 L60 40 M60 0 L0 40' stroke='#C8102E' stroke-width='4'/>
+<path d='M30 0 V40 M0 20 H60' stroke='#FFF' stroke-width='12'/>
+<path d='M30 0 V40 M0 20 H60' stroke='#C8102E' stroke-width='7'/>
+</svg>";
+
+        public const string SkSvg = @"<svg viewBox='0 0 60 40' width='22' height='16' xmlns='http://www.w3.org/2000/svg'>
+
+  <!-- Tricolor -->
+  <rect width='60' height='40' fill='#ffffff'/>
+  <rect y='13.3333' width='60' height='13.3333' fill='#0B4EA2'/>
+  <rect y='26.6667' width='60' height='13.3333' fill='#EE1C25'/>
+
+  <!-- Shield -->
+  <path d='
+    M18 8
+    h12
+    v13
+    c0 6.8 -6 9.8 -6 9.8
+    s-6 -3 -6 -9.8
+    z'
+    fill='#EE1C25'
+    stroke='#ffffff'
+    stroke-width='1'/>
+
+  <!-- Double cross -->
+  <rect x='23.3' y='11' width='1.4' height='11.5' fill='#ffffff'/>
+  <rect x='21' y='14.5' width='6' height='1.5' fill='#ffffff'/>
+  <rect x='21.7' y='17.7' width='4.6' height='1.5' fill='#ffffff'/>
+
+  <!-- Three blue hills -->
+  <path d='
+    M19 22.5
+    c1.8 -2.2 3.6 -2.2 5.2 0
+    c1.6 -2.2 3.4 -2.2 5.2 0
+    v4.5
+    h-10.4
+    z'
+    fill='#0B4EA2'/>
+
+</svg>";
+
+        public const string DeSvg = @"<svg viewBox='0 0 60 40' width='22' height='16' xmlns='http://www.w3.org/2000/svg'>
+<rect width='60' height='13.3333' fill='#000'/>
+<rect width='60' height='13.3333' y='13.3333' fill='#DD0000'/>
+<rect width='60' height='13.3333' y='26.6667' fill='#FFCE00'/>
+</svg>";
+    }
+
+    public static class I18n
+    {
+        // Inline translations (no .resx). lang: "en" / "sk" / "de"
+        public static string T(string lang, string en, string sk, string de)
+            => lang == "sk" ? sk : (lang == "de" ? de : en);
+    }
+}
+
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
