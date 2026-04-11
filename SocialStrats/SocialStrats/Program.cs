@@ -248,6 +248,86 @@ static async Task<(string? depIso, string? arrIso)> TryGetFlightTimesAsync(
     return (null, null);
 }
 
+static FareSummary? TryFindBestFare(JsonElement root)
+{
+    decimal? bestPrice = null;
+    string? bestDate = null;
+    string? bestDeparture = null;
+    string? bestArrival = null;
+
+    static string? ReadString(JsonElement element, params string[] names)
+    {
+        foreach (var name in names)
+        {
+            if (element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String)
+                return value.GetString();
+        }
+
+        return null;
+    }
+
+    static decimal? ReadPrice(JsonElement element)
+    {
+        return
+            element.TryGetProperty("price", out var p) && p.ValueKind == JsonValueKind.Number ? p.GetDecimal() :
+            (element.TryGetProperty("price", out var p2) && p2.ValueKind == JsonValueKind.Object &&
+             p2.TryGetProperty("value", out var pv) && pv.ValueKind == JsonValueKind.Number) ? pv.GetDecimal() :
+            (element.TryGetProperty("fare", out var f) && f.ValueKind == JsonValueKind.Object &&
+             f.TryGetProperty("amount", out var fa) && fa.ValueKind == JsonValueKind.Number) ? fa.GetDecimal() :
+            null;
+    }
+
+    static void Consider(
+        JsonElement element,
+        ref decimal? bestPrice,
+        ref string? bestDate,
+        ref string? bestDeparture,
+        ref string? bestArrival)
+    {
+        var date = ReadString(element, "dateOut", "day");
+        var price = ReadPrice(element);
+
+        if (date == null || price == null)
+            return;
+
+        if (bestPrice == null || price.Value < bestPrice.Value)
+        {
+            bestPrice = price.Value;
+            bestDate = date;
+            bestDeparture = ReadString(element, "departureDate");
+            bestArrival = ReadString(element, "arrivalDate");
+        }
+    }
+
+    static void Walk(
+        JsonElement element,
+        ref decimal? bestPrice,
+        ref string? bestDate,
+        ref string? bestDeparture,
+        ref string? bestArrival)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Array:
+                foreach (var item in element.EnumerateArray())
+                    Walk(item, ref bestPrice, ref bestDate, ref bestDeparture, ref bestArrival);
+                break;
+
+            case JsonValueKind.Object:
+                Consider(element, ref bestPrice, ref bestDate, ref bestDeparture, ref bestArrival);
+                foreach (var prop in element.EnumerateObject())
+                    Walk(prop.Value, ref bestPrice, ref bestDate, ref bestDeparture, ref bestArrival);
+                break;
+        }
+    }
+
+    Walk(root, ref bestPrice, ref bestDate, ref bestDeparture, ref bestArrival);
+
+    return bestPrice != null && bestDate != null
+        ? new FareSummary(bestDate, bestPrice.Value, bestDeparture, bestArrival)
+        : null;
+}
+
 static async Task<string> GetCachedStringAsync(
     IMemoryCache cache,
     HttpClient client,
@@ -263,6 +343,137 @@ static async Task<string> GetCachedStringAsync(
     cache.Set(cacheKey, json, ttl);
     return json;
 }
+
+static string BuildAgentTravelBrief(AgentTravelContext context, bool isSk)
+{
+    var parts = new List<string>();
+
+    if (!string.IsNullOrWhiteSpace(context.Origin))
+        parts.Add(isSk ? $"odlet {context.Origin}" : $"origin {context.Origin}");
+
+    if (!string.IsNullOrWhiteSpace(context.Month))
+        parts.Add(isSk ? $"mesiac {context.Month}" : $"month {context.Month}");
+
+    if (context.MaxBudget is not null && !string.IsNullOrWhiteSpace(context.Currency))
+        parts.Add(isSk ? $"rozpočet do {context.MaxBudget:0} {context.Currency}" : $"budget up to {context.MaxBudget:0} {context.Currency}");
+
+    var destinationIdea = !string.IsNullOrWhiteSpace(context.DestinationIdea)
+        ? context.DestinationIdea
+        : context.DestinationSearch;
+
+    if (!string.IsNullOrWhiteSpace(destinationIdea))
+        parts.Add(isSk ? $"cieľ alebo štýl: {destinationIdea}" : $"destination or vibe: {destinationIdea}");
+
+    if (context.MaxDistanceKm is not null)
+        parts.Add(isSk ? $"max. vzdialenosť {context.MaxDistanceKm} km" : $"max distance {context.MaxDistanceKm} km");
+
+    if (context.PreferWeekend)
+        parts.Add(isSk ? "preferuje víkend" : "prefers weekend trips");
+
+    if (context.OnlyHotDeals)
+        parts.Add(isSk ? "len horúce deals" : "hot deals only");
+
+    if (!string.IsNullOrWhiteSpace(context.Notes))
+        parts.Add(isSk ? $"poznámky: {context.Notes}" : $"notes: {context.Notes}");
+
+    if (parts.Count == 0)
+        return isSk ? "zatiaľ nemám žiadne cestovné preferencie" : "no travel preferences captured yet";
+
+    return string.Join(", ", parts);
+}
+
+static string[] BuildAgentSuggestedReplies(AgentTravelContext context, IReadOnlyCollection<string> missingFields, bool isSk)
+{
+    var suggestions = new List<string>();
+    var suggestedBudget = context.MaxBudget is not null
+        ? Math.Max(80, (int)Math.Round(context.MaxBudget.Value))
+        : 120;
+
+    if (missingFields.Contains("destination"))
+        suggestions.Add(isSk ? "Chcem teplo pri mori v máji." : "I want a warm beach trip in May.");
+
+    if (missingFields.Contains("budget"))
+        suggestions.Add(isSk
+            ? $"Rozpočet mám {suggestedBudget} {(context.Currency ?? "EUR")}."
+            : $"My budget is {suggestedBudget} {(context.Currency ?? "EUR")}.");
+
+    if (missingFields.Contains("distance"))
+        suggestions.Add(isSk ? "Nech je to do 1500 km." : "Keep it within 1500 km.");
+
+    if (missingFields.Contains("month"))
+        suggestions.Add(isSk ? "Môžem cestovať budúci mesiac." : "I can travel next month.");
+
+    if (suggestions.Count == 0)
+    {
+        suggestions.Add(isSk ? "Chcem víkendový city break." : "I want a weekend city break.");
+        suggestions.Add(isSk ? "Uprednostni priame lety." : "Prioritize direct flights.");
+        suggestions.Add(isSk ? "Nájdi najlepší pomer cena / vzdialenosť." : "Find the best value by price per kilometer.");
+    }
+
+    return suggestions
+        .Where(s => !string.IsNullOrWhiteSpace(s))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Take(4)
+        .ToArray();
+}
+
+app.MapPost("/api/agent/chat", (AgentChatRequest request) =>
+{
+    var lang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.ToLowerInvariant();
+    var isSk = lang == "sk";
+
+    var context = request.TravelContext ?? new AgentTravelContext(
+        Origin: null,
+        Month: null,
+        Currency: "EUR",
+        MaxBudget: null,
+        MaxDeals: null,
+        DestinationIdea: null,
+        DestinationSearch: null,
+        MaxDistanceKm: null,
+        MinDistanceKm: null,
+        PreferWeekend: false,
+        OnlyHotDeals: false,
+        Notes: null);
+
+    var missingFields = new List<string>();
+
+    if (string.IsNullOrWhiteSpace(context.DestinationIdea) && string.IsNullOrWhiteSpace(context.DestinationSearch))
+        missingFields.Add("destination");
+    if (context.MaxBudget is null)
+        missingFields.Add("budget");
+    if (context.MaxDistanceKm is null)
+        missingFields.Add("distance");
+    if (string.IsNullOrWhiteSpace(context.Month))
+        missingFields.Add("month");
+
+    var brief = BuildAgentTravelBrief(context, isSk);
+    var missingLabels = missingFields.Select(field => field switch
+    {
+        "destination" => isSk ? "kam alebo aký vibe tripu" : "where to go or the trip vibe",
+        "budget" => isSk ? "rozpočet" : "budget",
+        "distance" => isSk ? "maximálnu vzdialenosť" : "maximum distance",
+        "month" => isSk ? "mesiac cesty" : "travel month",
+        _ => field
+    }).ToArray();
+    var assistantText = missingFields.Count > 0
+        ? (isSk
+            ? $"Mám zatiaľ uložené: {brief}. Aby vedel reálny AI agent nájsť najlepšie trasy, ešte potrebujem doplniť: {string.Join(", ", missingLabels)}. Napíš mi kam chceš ísť alebo aký typ tripu hľadáš, aký máš rozpočet, ako ďaleko chceš letieť a kedy chceš cestovať."
+            : $"I've captured: {brief}. Before the real AI agent starts ranking routes, I still need: {string.Join(", ", missingLabels)}. Tell me where you want to go or the trip vibe, your budget, how far you're willing to fly, and when you want to travel.")
+        : (isSk
+            ? $"Super, brief pre agenta je pripravený: {brief}. Reálny AI agent teraz môže vyhľadať trasy, porovnať value podľa vzdialenosti a vysvetliť, prečo sa hodia."
+            : $"Great, the agent brief is ready: {brief}. The real AI agent can now search routes, compare value by distance, and explain why each option fits.");
+
+    var suggestedReplies = BuildAgentSuggestedReplies(context, missingFields, isSk);
+
+    return Results.Ok(new AgentChatResponse(
+        Status: missingFields.Count == 0 ? "ready-for-agent" : "needs-more-info",
+        AssistantMessage: new AgentChatMessage("assistant", assistantText),
+        TravelContext: context,
+        TravelBrief: brief,
+        MissingFields: missingFields.ToArray(),
+        SuggestedReplies: suggestedReplies));
+}).RequireRateLimiting("api");
 
 // -------------------- Raw proxy endpoints (optional, useful for debugging) --------------------
 app.MapGet("/api/ryanair/airports", async (
@@ -336,54 +547,21 @@ app.MapGet("/api/ryanair/cheapest", async (
     var json = await GetCachedStringAsync(cache, client, cacheKey, url, TimeSpan.FromMinutes(20), ct);
 
     using var doc = JsonDocument.Parse(json);
+    var fare = TryFindBestFare(doc.RootElement);
 
-    decimal? bestPrice = null;
-    string? bestDate = null;
-
-    static void Consider(JsonElement e, ref decimal? bestPrice, ref string? bestDate)
-    {
-        string? date =
-            e.TryGetProperty("dateOut", out var dateOut) ? dateOut.GetString() :
-            e.TryGetProperty("day", out var day) ? day.GetString() :
-            null;
-
-        decimal? price =
-            e.TryGetProperty("price", out var p) && p.ValueKind == JsonValueKind.Number ? p.GetDecimal() :
-            (e.TryGetProperty("price", out var p2) && p2.ValueKind == JsonValueKind.Object && p2.TryGetProperty("value", out var pv) && pv.ValueKind == JsonValueKind.Number) ? pv.GetDecimal() :
-            (e.TryGetProperty("fare", out var f) && f.ValueKind == JsonValueKind.Object && f.TryGetProperty("amount", out var fa) && fa.ValueKind == JsonValueKind.Number) ? fa.GetDecimal() :
-            null;
-
-        if (date != null && price != null)
-        {
-            if (bestPrice == null || price.Value < bestPrice.Value)
-            {
-                bestPrice = price.Value;
-                bestDate = date;
-            }
-        }
-    }
-
-    static void Walk(JsonElement el, ref decimal? bestPrice, ref string? bestDate)
-    {
-        if (el.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var x in el.EnumerateArray()) Walk(x, ref bestPrice, ref bestDate);
-            return;
-        }
-        if (el.ValueKind == JsonValueKind.Object)
-        {
-            Consider(el, ref bestPrice, ref bestDate);
-            foreach (var prop in el.EnumerateObject())
-                Walk(prop.Value, ref bestPrice, ref bestDate);
-        }
-    }
-
-    Walk(doc.RootElement, ref bestPrice, ref bestDate);
-
-    if (bestPrice == null || bestDate == null)
+    if (fare == null)
         return Results.NotFound(new { message = "No fares found for this corridor/month." });
 
-    return Results.Ok(new { origin, destination, date = bestDate, price = bestPrice, currency });
+    return Results.Ok(new
+    {
+        origin,
+        destination,
+        date = fare.Date,
+        departureTime = fare.DepartureTime,
+        arrivalTime = fare.ArrivalTime,
+        price = fare.Price,
+        currency
+    });
 }).RequireRateLimiting("api");
 
 // -------------------- High-level endpoint the UI uses --------------------
@@ -590,52 +768,9 @@ WalkRoutes(routesDoc.RootElement);
             }
 
             using var doc = JsonDocument.Parse(cheapestJson);
-
-            decimal? bestPrice = null;
-            string? bestDate = null;
-
-            static void ConsiderFare(JsonElement e, ref decimal? bestPrice, ref string? bestDate)
-            {
-                string? date =
-                    e.TryGetProperty("dateOut", out var dateOut) ? dateOut.GetString() :
-                    e.TryGetProperty("day", out var day) ? day.GetString() :
-                    null;
-
-                decimal? price =
-                    e.TryGetProperty("price", out var p) && p.ValueKind == JsonValueKind.Number ? p.GetDecimal() :
-                    (e.TryGetProperty("price", out var p2) && p2.ValueKind == JsonValueKind.Object && p2.TryGetProperty("value", out var pv) && pv.ValueKind == JsonValueKind.Number) ? pv.GetDecimal() :
-                    (e.TryGetProperty("fare", out var f) && f.ValueKind == JsonValueKind.Object && f.TryGetProperty("amount", out var fa) && fa.ValueKind == JsonValueKind.Number) ? fa.GetDecimal() :
-                    null;
-
-                if (date != null && price != null)
-                {
-                    if (bestPrice == null || price.Value < bestPrice.Value)
-                    {
-                        bestPrice = price.Value;
-                        bestDate = date;
-                    }
-                }
-            }
-
-            static void WalkFares(JsonElement el, ref decimal? bestPrice, ref string? bestDate)
-            {
-                if (el.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var x in el.EnumerateArray()) WalkFares(x, ref bestPrice, ref bestDate);
-                    return;
-                }
-                if (el.ValueKind == JsonValueKind.Object)
-                {
-                    ConsiderFare(el, ref bestPrice, ref bestDate);
-                    foreach (var prop in el.EnumerateObject())
-                        WalkFares(prop.Value, ref bestPrice, ref bestDate);
-                }
-            }
-
-            WalkFares(doc.RootElement, ref bestPrice, ref bestDate);
-
-            if (bestPrice == null || bestDate == null) return (DealResult?)null;
-            if (bestPrice.Value > maxBudget.Value) return (DealResult?)null;
+            var fare = TryFindBestFare(doc.RootElement);
+            if (fare == null) return (DealResult?)null;
+            if (fare.Price > maxBudget.Value) return (DealResult?)null;
 
             var dstMeta = airports[dst];
 
@@ -643,15 +778,15 @@ WalkRoutes(routesDoc.RootElement);
                 return (DealResult?)null;
 
             var km = HaversineKm(originMeta.Lat.Value, originMeta.Lng.Value, dstMeta.Lat.Value, dstMeta.Lng.Value);
-            var pricePerKm = km > 1 ? (double)bestPrice.Value / km : (double)bestPrice.Value;
+            var pricePerKm = km > 1 ? (double)fare.Price / km : (double)fare.Price;
 
             return new DealResult(
                 Origin: origin,
                 Destination: dst,
-                Date: bestDate!,
-                DepartureTime: null,
-                ArrivalTime: null,
-                Price: bestPrice.Value,
+                Date: fare.Date,
+                DepartureTime: fare.DepartureTime,
+                ArrivalTime: fare.ArrivalTime,
+                Price: fare.Price,
                 Currency: currency!,
                 DistanceKm: Math.Round(km),
                 PricePerKm: Math.Round(pricePerKm, 4),
@@ -681,30 +816,6 @@ WalkRoutes(routesDoc.RootElement);
         .Take(maxDeals.Value)
         .ToList();
 
-// 4) Enrich final deals with dep/arr times (only for what we actually return)
-    const string bookingMarket = "en-gb"; // stable default; you can later map from `lang` if you want
-    var sem2 = new SemaphoreSlim(4);
-
-    var enriched = await Task.WhenAll(deals.Select(async d =>
-    {
-        await sem2.WaitAsync(ct);
-        try
-        {
-            // BestDate can be "yyyy-MM-dd" already; if it contains time, slice first 10 chars
-            var ymd = d.Date.Length >= 10 ? d.Date.Substring(0, 10) : d.Date;
-
-            var (dep, arr) = await TryGetFlightTimesAsync(cache, client, d.Origin, d.Destination, ymd, bookingMarket, ct);
-            return d with { DepartureTime = dep, ArrivalTime = arr };
-        }
-        finally
-        {
-            await Task.Delay(Random.Shared.Next(30, 90), ct);
-            sem2.Release();
-        }
-    }));
-
-    deals = enriched.ToList();
-
     return Results.Ok(new
     {
         origin,
@@ -722,6 +833,29 @@ WalkRoutes(routesDoc.RootElement);
 app.Run();
 
 record AirportMeta(string Iata, string Name, string Country, double? Lat, double? Lng);
+record FareSummary(string Date, decimal Price, string? DepartureTime, string? ArrivalTime);
+record AgentChatMessage(string Role, string Content);
+record AgentTravelContext(
+    string? Origin,
+    string? Month,
+    string? Currency,
+    decimal? MaxBudget,
+    int? MaxDeals,
+    string? DestinationIdea,
+    string? DestinationSearch,
+    int? MaxDistanceKm,
+    int? MinDistanceKm,
+    bool PreferWeekend,
+    bool OnlyHotDeals,
+    string? Notes);
+record AgentChatRequest(List<AgentChatMessage>? Messages, AgentTravelContext? TravelContext);
+record AgentChatResponse(
+    string Status,
+    AgentChatMessage AssistantMessage,
+    AgentTravelContext TravelContext,
+    string TravelBrief,
+    string[] MissingFields,
+    string[] SuggestedReplies);
 
 record DealResult(
     string Origin,

@@ -740,6 +740,241 @@
             font-weight: 600;
         }
 
+        .ss-agent-panel{
+            margin-top: 14px;
+            padding: 14px;
+            border-radius: 22px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(246,248,255,0.92));
+            box-shadow: 0 16px 36px rgba(15,23,42,0.10);
+            position: relative;
+            overflow: hidden;
+        }
+        .ss-agent-panel::before{
+            content:"";
+            position:absolute;
+            inset:0 0 auto 0;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(0,102,255,0.00), rgba(0,102,255,0.45), rgba(255,107,0,0.25), rgba(0,208,132,0.18), rgba(0,102,255,0.00));
+        }
+        .ss-agent-head{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap: 12px;
+            flex-wrap:wrap;
+        }
+        .ss-agent-kicker{
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+        .ss-agent-title{
+            margin: 4px 0 0 0;
+            font-family: var(--font-display);
+            font-size: clamp(18px, 1.8vw, 24px);
+            line-height: 1.1;
+            letter-spacing: -0.4px;
+            color: var(--text);
+        }
+        .ss-agent-status{
+            display:inline-flex;
+            align-items:center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.86);
+            box-shadow: 0 10px 18px rgba(15,23,42,0.05);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text);
+            user-select: none;
+        }
+        .ss-agent-intro{
+            margin: 10px 0 0 0;
+            max-width: 72ch;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .ss-agent-thread{
+            margin-top: 12px;
+            display:flex;
+            flex-direction:column;
+            gap: 10px;
+            max-height: 196px;
+            overflow:auto;
+            padding-right: 4px;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 16px;
+            padding: 12px;
+            background: rgba(255,255,255,0.72);
+        }
+        .ss-agent-msg{
+            max-width: 88%;
+            padding: 12px 14px;
+            border-radius: 18px;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 10px 22px rgba(15,23,42,0.06);
+        }
+        .ss-agent-msg.assistant{
+            align-self:flex-start;
+            background: rgba(255,255,255,0.94);
+            color: var(--text);
+        }
+        .ss-agent-msg.user{
+            align-self:flex-end;
+            background: linear-gradient(135deg, var(--primary), #3385ff);
+            color: #fff;
+            border-color: transparent;
+        }
+        .ss-agent-msg-role{
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            opacity: .68;
+        }
+        .ss-agent-msg-body{
+            margin-top: 6px;
+            font-size: 13px;
+            line-height: 1.55;
+            white-space: pre-wrap;
+        }
+        .ss-agent-msg.is-typing .ss-agent-msg-body{
+            display:inline-flex;
+            align-items:center;
+            gap: 8px;
+        }
+        .ss-agent-dots{
+            display:inline-flex;
+            gap: 4px;
+        }
+        .ss-agent-dots span{
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: currentColor;
+            opacity: .22;
+            animation: agentDot 1.15s ease-in-out infinite;
+        }
+        .ss-agent-dots span:nth-child(2){ animation-delay: .15s; }
+        .ss-agent-dots span:nth-child(3){ animation-delay: .30s; }
+        @@keyframes agentDot{
+            0%, 80%, 100% { transform: translateY(0); opacity: .22; }
+            40% { transform: translateY(-3px); opacity: .64; }
+        }
+        .ss-agent-summary{
+            margin-top: 12px;
+            display:flex;
+            flex-wrap:wrap;
+            gap: 8px;
+        }
+        .ss-agent-summary-pill{
+            display:inline-flex;
+            align-items:center;
+            gap: 8px;
+            padding: 8px 11px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(248,250,252,0.92);
+            box-shadow: 0 10px 18px rgba(15,23,42,0.05);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            cursor: default;
+            user-select: none;
+        }
+        .ss-agent-summary-empty{
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .ss-agent-hints{
+            margin-top: 12px;
+            display:flex;
+            flex-wrap:wrap;
+            gap: 8px;
+        }
+        .ss-agent-chip{
+            padding: 9px 11px;
+            border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.10);
+            background: rgba(255,255,255,0.92);
+            box-shadow: 0 10px 18px rgba(15,23,42,0.05);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+            cursor: pointer;
+        }
+        .ss-agent-chip:hover{
+            transform: translateY(-1px);
+            border-color: rgba(0,102,255,0.35);
+            box-shadow: 0 14px 24px rgba(15,23,42,0.10);
+        }
+        .ss-agent-form{
+            margin-top: 12px;
+            display:grid;
+            gap: 10px;
+        }
+        .ss-agent-brief{
+            display:grid;
+            grid-template-columns: 1.2fr .8fr 1fr;
+            gap: 8px;
+        }
+        .ss-agent-input,
+        .ss-agent-composer{
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid rgba(0,0,0,0.10);
+            background: rgba(248,250,252,0.96);
+            padding: 12px 13px;
+            font: inherit;
+            font-size: 13px;
+            color: var(--text);
+            outline: none;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.70);
+        }
+        .ss-agent-input:focus,
+        .ss-agent-composer:focus{
+            border-color: rgba(0,102,255,0.42);
+            box-shadow: 0 0 0 4px rgba(0,102,255,0.08);
+            background: #fff;
+        }
+        .ss-agent-composer{
+            min-height: 88px;
+            resize: vertical;
+        }
+        .ss-agent-sendrow{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-end;
+            gap: 12px;
+            flex-wrap:wrap;
+        }
+        .ss-agent-meta{
+            max-width: 48ch;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .ss-agent-send{
+            min-width: 152px;
+            justify-content:center;
+        }
+        @@media (max-width: 720px){
+            .ss-agent-brief{ grid-template-columns: 1fr; }
+            .ss-agent-msg{ max-width: 100%; }
+            .ss-agent-sendrow{ align-items:stretch; }
+            .ss-agent-send{ width: 100%; }
+        }
+
         /* Feature tiles */
         .ss-hero-feature-row{
             margin-top: 14px;
@@ -1579,18 +1814,14 @@
             </div>
 
             <h1 class="ss-hero-title">
-                Nájdi najlacnejšie lety v Európe
-                <span class="hero-inline">
-                    <span class="hero-rotator">
-                        <span class="hero-rotator-word active">okamžite.</span>
-                        <span class="hero-rotator-word">s Ryanair.</span>
-                    </span>
-                </span>
+                Cestuj múdrejšie.
+                <br />
+                Ušetri viac.
             </h1>
 
 
             <p class="ss-hero-sub">
-                Naskenuj reálne ceny Ryanair v celej Európe, nájdi a porovnaj najvýhodnejšie trasy na živej mape.
+                Začni AI plannerom nižšie, potom naskenuj reálne ceny Ryanair v celej Európe a porovnaj najvýhodnejšie trasy na živej mape.
             </p>
 
             <div class="ss-hero-feature-row" role="list">
@@ -1645,6 +1876,52 @@
                     <div class="v" id="heroLastScan">—</div>
                 </div>
             </div>
+
+            <section class="ss-agent-panel"
+                     id="agentPanel"
+                     data-agent-initial="Napíš mi kam chceš ísť, aký máš rozpočet, limit vzdialenosti a vibe. Pripravím jasný brief pre route agenta."
+                     data-agent-sample-user="Víkendový city break do 150 €, odlet BTS, len priame lety."
+                     data-agent-sample-reply="Rozumiem. Zameriam sa na priame trasy do 1500 km, rozpočet 150 € a víkendové termíny. Vrátim 3-5 najlepších možností s pomerom €/km."
+                     data-agent-thinking="Premýšľam nad tvojím tripom..."
+                     data-agent-error="UI pre agenta je pripravené, ale reálny AI worker ešte nie je napojený."
+                     data-agent-error-toast="Endpoint pre AI handoff zatiaľ nie je hotový."
+                     data-agent-meta-default="Aktuálny odlet, mesiac a rozpočet sa pripájajú automaticky."
+                     aria-labelledby="agentPanelTitle">
+                <div class="ss-agent-head">
+                    <div>
+                        <div class="ss-agent-kicker">AI trip copilot</div>
+                        <h2 class="ss-agent-title" id="agentPanelTitle">Chat pred skenom</h2>
+                    </div>
+                    <span class="ss-agent-status">Beta UI</span>
+                </div>
+                <p class="ss-agent-intro">
+                    Zadaj rozpočet, limit vzdialenosti a vibe. Agent zhrnie brief a pripraví sken.
+                </p>
+                <div class="ss-agent-thread" id="agentThread" aria-live="polite"></div>
+                <div class="ss-agent-summary" id="agentSummary"></div>
+                <div class="ss-agent-hints" id="agentQuickReplies">
+                    <button class="ss-agent-chip" type="button" data-agent-prompt="Chcem víkendový city break s najlepším pomerom ceny a hodnoty.">Víkendový city break</button>
+                    <button class="ss-agent-chip" type="button" data-agent-prompt="Chcem teplo pri mori v máji.">Chcem teplo pri mori v máji</button>
+                    <button class="ss-agent-chip" type="button" data-agent-prompt="Nech je to do 1500 km a uprednostni priame lety.">Do 1500 km</button>
+                    <button class="ss-agent-chip" type="button" data-agent-prompt="Chcem najlepšie májové trasy s dobrým pomerom ceny a vzdialenosti.">Najlepšia hodnota v máji</button>
+                </div>
+                <form class="ss-agent-form" id="agentForm" autocomplete="off">
+                    <div class="ss-agent-brief">
+                        <input class="ss-agent-input" id="agentDestinationIdea" type="text" placeholder="Kam alebo aký vibe" aria-label="Nápad na destináciu" />
+                        <input class="ss-agent-input" id="agentMaxDistance" type="number" min="100" max="10000" step="50" placeholder="Max vzdialenosť km" aria-label="Maximálna vzdialenosť v kilometroch" />
+                        <input class="ss-agent-input" id="agentTripNotes" type="text" placeholder="Poznámky: slnko, víkend, direct..." aria-label="Poznámky k tripu" />
+                    </div>
+                    <textarea class="ss-agent-composer" id="agentComposer" placeholder="Príklad: Chcem slnečný víkendový trip z BTS do 120 EUR, ideálne let do dvoch hodín." aria-label="Správa pre AI agenta"></textarea>
+                    <div class="ss-agent-sendrow">
+                        <div class="ss-agent-meta" id="agentMeta" data-default-text="Aktuálny odlet, mesiac a rozpočet sa pripájajú automaticky.">
+                            Aktuálny odlet, mesiac a rozpočet sa pripájajú automaticky.
+                        </div>
+                        <button class="btn-ss btn-ss-primary ss-agent-send" id="agentSendBtn" type="submit" data-label-default="Opýtať sa agenta" data-label-busy="Premýšľam...">
+                            <span class="ss-agent-send-label">Opýtať sa agenta</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
         </div>
 
         <aside class="ss-hero-right">
@@ -2034,6 +2311,298 @@
     `;
         }
 
+        const AGENT_ENDPOINT = "/api/agent/chat";
+        let agentState = { thread: [], pending: false };
+
+        function getAgentPanel() {
+            return document.getElementById("agentPanel");
+        }
+
+        function getAgentInputValue(id) {
+            const el = document.getElementById(id);
+            const value = (el?.value || "").toString().trim();
+            return value || null;
+        }
+
+        function getAgentIntValue(id) {
+            const value = getAgentInputValue(id);
+            if (value == null) return null;
+            const parsed = parseInt(value, 10);
+            return Number.isFinite(parsed) ? parsed : null;
+        }
+
+        function getAgentMaxDistance() {
+            const plannerDistance = getAgentIntValue("agentMaxDistance");
+            if (plannerDistance != null) return plannerDistance;
+
+            const filterDistance = getAgentIntValue("maxDist");
+            return (filterDistance != null && filterDistance < 4000) ? filterDistance : null;
+        }
+
+        function buildInitialAgentThread() {
+            const panel = getAgentPanel();
+            const intro = panel?.dataset.agentInitial || "Napíš mi kam chceš ísť, aký máš rozpočet a ako ďaleko chceš letieť.";
+            const sampleUser = panel?.dataset.agentSampleUser || "";
+            const sampleReply = panel?.dataset.agentSampleReply || "";
+            const thread = [{
+                role: "assistant",
+                content: intro
+            }];
+            if (sampleUser && sampleReply) {
+                thread.push(
+                    { role: "user", content: sampleUser },
+                    { role: "assistant", content: sampleReply }
+                );
+            }
+            return thread;
+        }
+
+        function setAgentMeta(text) {
+            const meta = document.getElementById("agentMeta");
+            if (!meta) return;
+            meta.textContent = text || meta.dataset.defaultText || "";
+        }
+
+        function setAgentPending(isPending) {
+            agentState.pending = !!isPending;
+
+            const button = document.getElementById("agentSendBtn");
+            const label = button?.querySelector(".ss-agent-send-label");
+            if (button) button.disabled = !!isPending;
+            if (label) {
+                label.textContent = isPending
+                    ? (button.dataset.labelBusy || "Premýšľam...")
+                    : (button.dataset.labelDefault || "Opýtať sa agenta");
+            }
+
+            const composer = document.getElementById("agentComposer");
+            if (composer) composer.disabled = !!isPending;
+        }
+
+        function collectAgentTravelContext() {
+            const maxBudget = getAgentIntValue("maxBudget");
+            const maxDeals = getAgentIntValue("maxDeals");
+            const minDistance = getAgentIntValue("minDist");
+
+            return {
+                origin: normalizeOriginInput() || null,
+                month: getAgentInputValue("month"),
+                currency: getAgentInputValue("currency"),
+                maxBudget: maxBudget,
+                maxDeals: maxDeals,
+                destinationIdea: getAgentInputValue("agentDestinationIdea"),
+                destinationSearch: getAgentInputValue("destSearch"),
+                maxDistanceKm: getAgentMaxDistance(),
+                minDistanceKm: (minDistance != null && minDistance > 0) ? minDistance : null,
+                preferWeekend: !!document.getElementById("preferWeekend")?.checked,
+                onlyHotDeals: !!document.getElementById("onlyHot")?.checked,
+                notes: getAgentInputValue("agentTripNotes")
+            };
+        }
+
+        function applyAgentTravelContext(context) {
+            if (!context) return;
+
+            if (context.origin && /^[a-z]{3}$/i.test(context.origin) && document.getElementById("origin")) {
+                document.getElementById("origin").value = context.origin.toUpperCase();
+            }
+            if (context.month && document.getElementById("month")) {
+                document.getElementById("month").value = context.month;
+            }
+            if (context.currency && document.getElementById("currency")) {
+                document.getElementById("currency").value = context.currency;
+            }
+            if (Number.isFinite(Number(context.maxBudget)) && document.getElementById("maxBudget")) {
+                document.getElementById("maxBudget").value = `${context.maxBudget}`;
+            }
+            if (Number.isFinite(Number(context.maxDeals)) && document.getElementById("maxDeals")) {
+                document.getElementById("maxDeals").value = `${context.maxDeals}`;
+            }
+            if (typeof context.destinationIdea === "string" && document.getElementById("agentDestinationIdea")) {
+                document.getElementById("agentDestinationIdea").value = context.destinationIdea;
+            }
+            if (typeof context.destinationSearch === "string" && document.getElementById("destSearch")) {
+                document.getElementById("destSearch").value = context.destinationSearch;
+            }
+            if (Number.isFinite(Number(context.maxDistanceKm)) && document.getElementById("agentMaxDistance")) {
+                document.getElementById("agentMaxDistance").value = `${context.maxDistanceKm}`;
+            }
+            if (typeof context.notes === "string" && document.getElementById("agentTripNotes")) {
+                document.getElementById("agentTripNotes").value = context.notes;
+            }
+            if (typeof context.preferWeekend === "boolean" && document.getElementById("preferWeekend")) {
+                document.getElementById("preferWeekend").checked = context.preferWeekend;
+            }
+            if (typeof context.onlyHotDeals === "boolean" && document.getElementById("onlyHot")) {
+                document.getElementById("onlyHot").checked = context.onlyHotDeals;
+            }
+        }
+
+        function renderAgentContextSummary(context = collectAgentTravelContext()) {
+            const summary = document.getElementById("agentSummary");
+            if (!summary) return;
+
+            const items = [];
+            if (context.origin) items.push(`Odlet: ${context.origin}`);
+            if (context.month) items.push(`Mesiac: ${context.month}`);
+            if (context.maxBudget != null && Number.isFinite(Number(context.maxBudget)) && context.currency) {
+                items.push(`Rozpočet: ${currencySymbol(context.currency)}${Number(context.maxBudget).toFixed(0)}`);
+            }
+
+            const destinationIdea = context.destinationIdea || context.destinationSearch;
+            if (destinationIdea) items.push(`Vibe: ${destinationIdea}`);
+            if (context.maxDistanceKm != null && Number.isFinite(Number(context.maxDistanceKm)) && Number(context.maxDistanceKm) > 0) {
+                items.push(`Limit: ${Number(context.maxDistanceKm).toFixed(0)} km`);
+            }
+            if (context.preferWeekend) items.push("Víkend");
+            if (context.onlyHotDeals) items.push("Hot deals");
+
+            summary.innerHTML = items.length
+                ? items.map(item => `<span class="ss-agent-summary-pill">${escapeHtml(item)}</span>`).join("")
+                : `<span class="ss-agent-summary-empty">Napíš destináciu alebo vibe, budget a limit vzdialenosti. Aktuálne nastavenia skenu sa pripoja automaticky.</span>`;
+        }
+
+        function renderAgentSuggestedReplies(replies) {
+            const container = document.getElementById("agentQuickReplies");
+            if (!container || !Array.isArray(replies) || replies.length === 0) return;
+
+            container.innerHTML = replies.slice(0, 4).map(reply => `
+                <button class="ss-agent-chip" type="button" data-agent-prompt="${escapeHtml(reply)}">${escapeHtml(reply)}</button>
+            `).join("");
+        }
+
+        function renderAgentThread() {
+            const thread = document.getElementById("agentThread");
+            const panel = getAgentPanel();
+            if (!thread) return;
+
+            const html = agentState.thread.map(message => {
+                const role = message.role === "user" ? "user" : "assistant";
+                const roleLabel = role === "user" ? "Ty" : "Agent";
+                return `
+                    <article class="ss-agent-msg ${role}">
+                        <div class="ss-agent-msg-role">${escapeHtml(roleLabel)}</div>
+                        <div class="ss-agent-msg-body">${escapeHtml(message.content || "")}</div>
+                    </article>
+                `;
+            }).join("");
+
+            const typing = agentState.pending ? `
+                <article class="ss-agent-msg assistant is-typing">
+                    <div class="ss-agent-msg-role">Agent</div>
+                    <div class="ss-agent-msg-body">
+                        <span>${escapeHtml(panel?.dataset.agentThinking || "Premýšľam nad tvojím tripom...")}</span>
+                        <span class="ss-agent-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+                    </div>
+                </article>
+            ` : "";
+
+            thread.innerHTML = html + typing;
+            thread.scrollTop = thread.scrollHeight;
+        }
+
+        async function sendAgentMessage(forcedText) {
+            if (agentState.pending) return;
+
+            const input = document.getElementById("agentComposer");
+            const text = (forcedText ?? input?.value ?? "").trim();
+            if (!text) return;
+
+            agentState.thread.push({ role: "user", content: text });
+            if (input) input.value = "";
+            renderAgentThread();
+            setAgentPending(true);
+
+            try {
+                const response = await fetch(AGENT_ENDPOINT, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        messages: agentState.thread,
+                        travelContext: collectAgentTravelContext()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const payload = await response.json();
+                applyAgentTravelContext(payload.travelContext);
+
+                if (payload.assistantMessage?.content) {
+                    agentState.thread.push(payload.assistantMessage);
+                }
+
+                setAgentMeta(payload.travelBrief || "");
+                renderAgentContextSummary(payload.travelContext);
+                renderAgentSuggestedReplies(payload.suggestedReplies);
+                persistUiToStorage?.();
+            } catch (error) {
+                const panel = getAgentPanel();
+                agentState.thread.push({
+                    role: "assistant",
+                    content: panel?.dataset.agentError || "UI pre agenta je pripravené, ale reálny AI worker ešte nie je napojený."
+                });
+                showToast(panel?.dataset.agentErrorToast || "Endpoint pre AI handoff zatiaľ nie je hotový.", "warning");
+            } finally {
+                setAgentPending(false);
+                renderAgentThread();
+            }
+        }
+
+        function bindAgentContextInputs() {
+            const ids = ["origin", "month", "currency", "maxBudget", "maxDeals", "destSearch", "minDist", "maxDist", "onlyHot", "preferWeekend", "agentDestinationIdea", "agentMaxDistance", "agentTripNotes"];
+
+            for (const id of ids) {
+                const el = document.getElementById(id);
+                if (!el || el.dataset.agentBound === "true") continue;
+
+                el.dataset.agentBound = "true";
+                const evt = (el.type === "checkbox" || el.tagName === "SELECT") ? "change" : "input";
+                el.addEventListener(evt, () => renderAgentContextSummary());
+            }
+        }
+
+        function bindAgentUi() {
+            const panel = getAgentPanel();
+            if (!panel) return;
+
+            agentState.thread = buildInitialAgentThread();
+            agentState.pending = false;
+
+            const form = document.getElementById("agentForm");
+            if (form && form.dataset.bound !== "true") {
+                form.dataset.bound = "true";
+                form.addEventListener("submit", async (event) => {
+                    event.preventDefault();
+                    await sendAgentMessage();
+                });
+            }
+
+            const replies = document.getElementById("agentQuickReplies");
+            if (replies && replies.dataset.bound !== "true") {
+                replies.dataset.bound = "true";
+                replies.addEventListener("click", async (event) => {
+                    const button = event.target.closest("[data-agent-prompt]");
+                    if (!button || agentState.pending) return;
+
+                    const prompt = (button.dataset.agentPrompt || button.textContent || "").trim();
+                    if (!prompt) return;
+
+                    const input = document.getElementById("agentComposer");
+                    if (input) input.value = prompt;
+                    await sendAgentMessage(prompt);
+                });
+            }
+
+            bindAgentContextInputs();
+            setAgentMeta(panel.dataset.agentMetaDefault || "");
+            renderAgentThread();
+            renderAgentContextSummary();
+            setAgentPending(false);
+        }
+
         // =========================
         // Airport picker (Origin + Destination)
         // =========================
@@ -2069,6 +2638,7 @@
 
             // Immediately apply so it feels “real”
             applyClientFilters(true);
+            renderAgentContextSummary();
         }
 
         function openAirportPicker(targetId = "origin", opts = {}) {
@@ -2368,6 +2938,7 @@
             bindAdvancedUI();
             restoreUiFromStorage();
             bindAirportPicker();
+            bindAgentUi();
 
             loadAirportsList().catch(() => showToast("Airports list not loaded yet (you can still type an IATA code).", "warning"));
 
@@ -2543,6 +3114,7 @@
 
         function setOrigin(code) {
             document.getElementById("origin").value = code;
+            renderAgentContextSummary();
         }
 
         // --- Map size toggle ---
