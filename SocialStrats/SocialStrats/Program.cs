@@ -1,13 +1,17 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
-using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc.Razor;
 
+LoadDotEnv(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+var openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY")?.Trim();
+var openAiModel = Environment.GetEnvironmentVariable("OPENAI_MODEL")?.Trim();
+openAiModel = string.IsNullOrWhiteSpace(openAiModel) ? "gpt-4o-mini" : openAiModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +39,12 @@ builder.Services.AddHttpClient("ryanair", client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) SocialStrats/1.0");
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en,en-US;q=0.9");
+});
+
+builder.Services.AddHttpClient("openai", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(45);
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 });
 
 var app = builder.Build();
@@ -125,6 +135,373 @@ static async Task<string> GetStringWithRetryAsync(HttpClient client, string url,
     }
 
     throw new HttpRequestException("Upstream throttling or transient failure persisted after retries.");
+}
+
+static void LoadDotEnv(string envFilePath)
+{
+    if (!File.Exists(envFilePath))
+        return;
+
+    foreach (var rawLine in File.ReadAllLines(envFilePath))
+    {
+        var line = rawLine.Trim();
+        if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal))
+            continue;
+
+        var idx = line.IndexOf('=');
+        if (idx <= 0)
+            continue;
+
+        var key = line[..idx].Trim();
+        var value = line[(idx + 1)..].Trim();
+
+        if (value.StartsWith('"') && value.EndsWith('"') && value.Length >= 2)
+            value = value[1..^1];
+
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(key)))
+            Environment.SetEnvironmentVariable(key, value);
+    }
+}
+
+static string AgentLanguage(string lang)
+{
+    return lang switch
+    {
+        "sk" => "Slovak",
+        "de" => "German",
+        _ => "English"
+    };
+}
+
+static string BuildAgentSystemPrompt(string lang)
+{
+    var languageName = AgentLanguage(lang);
+
+    return $"""
+You are the SocialStrats flight-planning assistant.
+Always respond in {languageName}.
+Be concise and practical.
+
+Goals:
+1) If essential fields are missing, ask short follow-up questions.
+2) If deals are provided, rank by fit to brief (not only by lowest price).
+3) Explain tradeoffs: cheap pick vs smart value.
+
+Important:
+- Destination is optional. If user has no fixed destination, propose best-fit options from available deals.
+- Ask for destination only if the user explicitly wants one specific city/region but it is ambiguous.
+
+Output rules:
+- Return valid JSON only.
+- Use schema fields: assistantMessage (string), suggestedReplies (string array).
+- Keep suggestedReplies to 2-4 short options.
+- Do not include markdown code fences.
+""";
+}
+
+static string DealTypeLabel(double pricePerKm, string lang)
+{
+    var smart = pricePerKm <= 0.06;
+    return lang switch
+    {
+        "sk" => smart ? "smart value" : "cheap pick",
+        "de" => smart ? "smart value" : "cheap pick",
+        _ => smart ? "smart value" : "cheap pick"
+    };
+}
+
+static bool DealMatchesDestination(DealResult deal, AgentTravelContext context)
+{
+    var raw = string.Join(" ", new[] { context.DestinationSearch, context.DestinationIdea }
+        .Where(s => !string.IsNullOrWhiteSpace(s))
+        .Select(s => s!.Trim()));
+
+    if (string.IsNullOrWhiteSpace(raw))
+        return true;
+
+    var terms = raw
+        .Split(new[] { ' ', ',', ';', '/', '-', '_', '.', ':' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Where(t => t.Length >= 3)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+
+    if (terms.Length == 0)
+        return true;
+
+    var dstCode = deal.Destination?.Trim() ?? string.Empty;
+    var dstName = deal.DestinationName?.Trim() ?? string.Empty;
+
+    foreach (var term in terms)
+    {
+        if (term.Length == 3 && dstCode.Equals(term, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (dstName.Contains(term, StringComparison.OrdinalIgnoreCase))
+            return true;
+    }
+
+    return false;
+}
+
+static string BuildDealReason(DealResult deal, AgentTravelContext context, string lang)
+{
+    var budgetOk = context.MaxBudget is null || deal.Price <= context.MaxBudget.Value;
+    var distanceOk = context.MaxDistanceKm is null || deal.DistanceKm <= context.MaxDistanceKm.Value;
+    var type = DealTypeLabel(deal.PricePerKm, lang);
+
+    return lang switch
+    {
+        "sk" => $"{type}: cena {(budgetOk ? "sedí" : "je nad")}, vzdialenosť {(distanceOk ? "v limite" : "mimo limit")}.",
+        "de" => $"{type}: Preis {(budgetOk ? "passt" : "liegt ueber Budget")}, Distanz {(distanceOk ? "im Rahmen" : "ueber Limit") }.",
+        _ => $"{type}: price {(budgetOk ? "fits" : "is above")}, distance {(distanceOk ? "within range" : "outside range")}."
+    };
+}
+
+static AgentDealCard[] BuildAgentDealShortlist(IReadOnlyCollection<DealResult> deals, AgentTravelContext context, string lang)
+{
+    return deals
+        .Take(5)
+        .Select(d => new AgentDealCard(
+            Destination: d.Destination,
+            DestinationName: d.DestinationName,
+            Date: d.Date,
+            Price: d.Price,
+            Currency: d.Currency,
+            DistanceKm: d.DistanceKm,
+            PricePerKm: d.PricePerKm,
+            Reason: BuildDealReason(d, context, lang),
+            IsAlternative: false))
+        .ToArray();
+}
+
+static string[] ExtractDestinationTerms(AgentTravelContext context)
+{
+    return string.Join(" ", new[] { context.DestinationSearch, context.DestinationIdea }
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => s!.Trim()))
+        .Split(new[] { ' ', ',', ';', '/', '-', '_', '.', ':' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Where(t => t.Length >= 3)
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+}
+
+static async Task<List<AirportMeta>> FetchAirportCatalogAsync(string lang, IHttpClientFactory http, CancellationToken ct)
+{
+    using var client = http.CreateClient("ryanair");
+    var url = $"https://www.ryanair.com/api/views/locate/3/airports/{Uri.EscapeDataString(lang)}/active";
+    var json = await GetStringWithRetryAsync(client, url, ct);
+
+    using var doc = JsonDocument.Parse(json);
+    var result = new List<AirportMeta>();
+
+    foreach (var el in doc.RootElement.EnumerateArray())
+    {
+        var iata =
+            el.TryGetProperty("iataCode", out var i1) ? i1.GetString() :
+            el.TryGetProperty("code", out var i2) ? i2.GetString() :
+            null;
+
+        if (string.IsNullOrWhiteSpace(iata))
+            continue;
+
+        string name =
+            el.TryGetProperty("name", out var n) ? (n.GetString() ?? iata!) :
+            el.TryGetProperty("seoName", out var sn) ? (sn.GetString() ?? iata!) :
+            iata!;
+
+        string country =
+            el.TryGetProperty("countryName", out var cn) ? (cn.GetString() ?? "") :
+            el.TryGetProperty("country", out var c2) ? (c2.GetString() ?? "") :
+            "";
+
+        double? lat = null;
+        double? lng = null;
+        if (el.TryGetProperty("coordinates", out var coords) && coords.ValueKind == JsonValueKind.Object)
+        {
+            if (coords.TryGetProperty("latitude", out var la) && la.ValueKind == JsonValueKind.Number) lat = la.GetDouble();
+            if (coords.TryGetProperty("longitude", out var lo) && lo.ValueKind == JsonValueKind.Number) lng = lo.GetDouble();
+        }
+
+        result.Add(new AirportMeta(iata!.Trim().ToUpperInvariant(), name, country, lat, lng));
+    }
+
+    return result;
+}
+
+static async Task<AirportMeta?> ResolveDestinationAnchorAsync(AgentTravelContext context, string lang, IHttpClientFactory http, CancellationToken ct)
+{
+    var terms = ExtractDestinationTerms(context);
+    if (terms.Length == 0)
+        return null;
+
+    List<AirportMeta> airports;
+    try
+    {
+        airports = await FetchAirportCatalogAsync(lang, http, ct);
+    }
+    catch
+    {
+        return null;
+    }
+
+    foreach (var term in terms)
+    {
+        if (term.Length == 3)
+        {
+            var byIata = airports.FirstOrDefault(a => a.Iata.Equals(term, StringComparison.OrdinalIgnoreCase));
+            if (byIata is not null)
+                return byIata;
+        }
+    }
+
+    var byName = airports.FirstOrDefault(a =>
+        terms.Any(t => a.Name.Contains(t, StringComparison.OrdinalIgnoreCase)));
+
+    return byName;
+}
+
+static string BuildAlternativeReason(double nearKm, string lang)
+{
+    return lang switch
+    {
+        "sk" => $"Alternative: približne {nearKm:0} km od zvolenej destinácie.",
+        "de" => $"Alternative: etwa {nearKm:0} km von deinem gewaehlten Ziel entfernt.",
+        _ => $"Alternative: around {nearKm:0} km from your selected destination."
+    };
+}
+
+static AgentDealCard[] BuildAlternativeDealShortlist(
+    IReadOnlyCollection<DealResult> candidateDeals,
+    AgentTravelContext context,
+    string lang,
+    AirportMeta? anchor)
+{
+    if (candidateDeals.Count == 0)
+        return Array.Empty<AgentDealCard>();
+
+    var ranked = candidateDeals
+        .Select(d =>
+        {
+            double nearKm = double.MaxValue;
+            if (anchor?.Lat is not null && anchor.Lng is not null)
+                nearKm = HaversineKm(anchor.Lat.Value, anchor.Lng.Value, d.DestLat, d.DestLng);
+
+            return new { Deal = d, NearKm = nearKm };
+        })
+        .OrderBy(x => x.NearKm)
+        .ThenBy(x => x.Deal.Price)
+        .ThenBy(x => x.Deal.PricePerKm)
+        .Take(5)
+        .ToList();
+
+    return ranked
+        .Select(x => new AgentDealCard(
+            Destination: x.Deal.Destination,
+            DestinationName: x.Deal.DestinationName,
+            Date: x.Deal.Date,
+            Price: x.Deal.Price,
+            Currency: x.Deal.Currency,
+            DistanceKm: x.Deal.DistanceKm,
+            PricePerKm: x.Deal.PricePerKm,
+            Reason: BuildAlternativeReason(x.NearKm, lang),
+            IsAlternative: true))
+        .ToArray();
+}
+
+static async Task<OpenAiAgentResult?> AskOpenAiAgentAsync(
+    string apiKey,
+    string model,
+    string lang,
+    AgentTravelContext context,
+    string brief,
+    IReadOnlyCollection<string> missingFields,
+    IReadOnlyCollection<DealResult> deals,
+    IReadOnlyCollection<AgentChatMessage> thread,
+    IHttpClientFactory http,
+    CancellationToken ct)
+{
+    var trimmedThread = thread
+        .Where(m => !string.IsNullOrWhiteSpace(m.Content) && (m.Role == "user" || m.Role == "assistant"))
+        .TakeLast(12)
+        .ToArray();
+
+    var payload = new
+    {
+        language = AgentLanguage(lang),
+        travelBrief = brief,
+        travelContext = context,
+        missingFields,
+        conversation = trimmedThread,
+        deals = deals.Take(8).Select(d => new
+        {
+            d.Destination,
+            d.DestinationName,
+            d.Date,
+            d.Price,
+            d.Currency,
+            d.DistanceKm,
+            d.PricePerKm
+        }).ToArray()
+    };
+
+    var requestBody = new
+    {
+        model,
+        temperature = 0.35,
+        response_format = new { type = "json_object" },
+        messages = new object[]
+        {
+            new { role = "system", content = BuildAgentSystemPrompt(lang) },
+            new { role = "user", content = JsonSerializer.Serialize(payload) }
+        }
+    };
+
+    using var client = http.CreateClient("openai");
+    using var req = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
+    req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+    req.Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+    using var resp = await client.SendAsync(req, ct);
+    var raw = await resp.Content.ReadAsStringAsync(ct);
+    if (!resp.IsSuccessStatusCode)
+        return null;
+
+    using var doc = JsonDocument.Parse(raw);
+    var content = doc.RootElement
+        .GetProperty("choices")[0]
+        .GetProperty("message")
+        .GetProperty("content")
+        .GetString();
+
+    if (string.IsNullOrWhiteSpace(content))
+        return null;
+
+    using var outDoc = JsonDocument.Parse(content);
+    var root = outDoc.RootElement;
+
+    var assistantMessage = root.TryGetProperty("assistantMessage", out var msgEl) && msgEl.ValueKind == JsonValueKind.String
+        ? msgEl.GetString()
+        : null;
+
+    var suggestedReplies = new List<string>();
+    if (root.TryGetProperty("suggestedReplies", out var repliesEl) && repliesEl.ValueKind == JsonValueKind.Array)
+    {
+        foreach (var item in repliesEl.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(item.GetString()))
+                suggestedReplies.Add(item.GetString()!);
+        }
+    }
+
+    if (string.IsNullOrWhiteSpace(assistantMessage) && suggestedReplies.Count == 0)
+        return null;
+
+    return new OpenAiAgentResult(
+        AssistantMessage: assistantMessage,
+        SuggestedReplies: suggestedReplies
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(4)
+            .ToArray());
 }
 static async Task<(string? depIso, string? arrIso)> TryGetFlightTimesAsync(
     IMemoryCache cache,
@@ -389,6 +766,9 @@ static string[] BuildAgentSuggestedReplies(AgentTravelContext context, IReadOnly
         ? Math.Max(80, (int)Math.Round(context.MaxBudget.Value))
         : 120;
 
+    if (missingFields.Contains("origin"))
+        suggestions.Add(isSk ? "Letím z BTS." : "I fly from BTS.");
+
     if (missingFields.Contains("destination"))
         suggestions.Add(isSk ? "Chcem teplo pri mori v máji." : "I want a warm beach trip in May.");
 
@@ -417,10 +797,125 @@ static string[] BuildAgentSuggestedReplies(AgentTravelContext context, IReadOnly
         .ToArray();
 }
 
-app.MapPost("/api/agent/chat", (AgentChatRequest request) =>
+static bool IsWeekendDate(string? date)
+{
+    if (string.IsNullOrWhiteSpace(date))
+        return false;
+
+    if (!DateOnly.TryParse(date, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+        return false;
+
+    return parsed.DayOfWeek is DayOfWeek.Friday or DayOfWeek.Saturday or DayOfWeek.Sunday;
+}
+
+static string[] BuildAgentDealSuggestions(bool isSk)
+{
+    return isSk
+        ?
+        [
+            "Ukáž len víkendové možnosti.",
+            "Uprednostni najlacnejšie lety.",
+            "Nájdi smart value do 1200 km.",
+            "Pridaj alternatívu s teplejším počasím."
+        ]
+        :
+        [
+            "Show only weekend-friendly options.",
+            "Prioritize the absolute cheapest flights.",
+            "Find smart value picks within 1200 km.",
+            "Add a warmer-weather alternative."
+        ];
+}
+
+static string BuildAgentDealsMessage(
+    AgentTravelContext context,
+    string brief,
+    List<DealResult> deals,
+    string lang)
+{
+    var isSk = lang == "sk";
+    var isDe = lang == "de";
+
+    if (deals.Count == 0)
+    {
+        if (isSk)
+            return $"Brief je pripravený ({brief}), ale pre tento mesiac nevidím vhodné lety v danom rozpočte alebo vzdialenosti. Skús zvýšiť budget, vzdialenosť alebo zmeniť mesiac.";
+        if (isDe)
+            return $"Dein Brief ist bereit ({brief}), aber ich finde in diesem Monat keine passenden Fluege fuer Budget oder Distanz. Erhoehe Budget/Distanz oder aendere den Monat.";
+
+        return $"Your brief is ready ({brief}), but I could not find matching flights this month within your budget or distance. Try increasing budget/distance or changing month.";
+    }
+
+    var lines = new List<string>
+    {
+        isSk
+            ? $"Našiel som {deals.Count} najvhodnejších možností podľa briefu: {brief}."
+            : isDe
+                ? $"Ich habe {deals.Count} Optionen gefunden, die am besten zu deinem Brief passen: {brief}."
+                : $"I found {deals.Count} best-fit options for your brief: {brief}."
+    };
+
+    for (var i = 0; i < deals.Count; i++)
+    {
+        var d = deals[i];
+        var pickType = DealTypeLabel(d.PricePerKm, lang);
+
+        lines.Add($"{i + 1}. {d.DestinationName} ({d.Destination}) - {d.Price:0} {d.Currency}, {d.DistanceKm:0} km, {d.Date} ({pickType}).");
+    }
+
+    lines.Add(isSk
+        ? "Ak chceš, upravím shortlist na najlacnejšie, najbližšie alebo čisto víkendové lety."
+        : isDe
+            ? "Wenn du willst, passe ich die Shortlist auf guenstigste, naechste oder reine Wochenendfluege an."
+            : "If you want, I can refine this shortlist for cheapest, closest, or weekend-only flights.");
+
+    return string.Join("\n", lines);
+}
+
+static async Task<List<DealResult>> FetchAgentDealsAsync(
+    AgentTravelContext context,
+    string lang,
+    IHttpClientFactory http,
+    HttpContext httpContext,
+    CancellationToken ct)
+{
+    var origin = (context.Origin ?? string.Empty).Trim().ToUpperInvariant();
+    var month = (context.Month ?? string.Empty).Trim();
+    var currency = string.IsNullOrWhiteSpace(context.Currency) ? "EUR" : context.Currency!.Trim().ToUpperInvariant();
+    var requestedBudget = context.MaxBudget is null ? 150 : Math.Max(20, (int)Math.Round(context.MaxBudget.Value));
+    // Fetch a wider envelope so the agent can still propose alternatives when strict budget has no hits.
+    var budget = Math.Clamp(Math.Max(requestedBudget + 120, requestedBudget * 2), 120, 700);
+    var maxDeals = context.MaxDeals is null ? 50 : Math.Clamp(context.MaxDeals.Value * 2, 10, 120);
+
+    var query = $"origin={Uri.EscapeDataString(origin)}" +
+                $"&month={Uri.EscapeDataString(month)}" +
+                $"&currency={Uri.EscapeDataString(currency)}" +
+                $"&maxBudget={budget}" +
+                $"&maxDeals={maxDeals}" +
+                $"&lang={Uri.EscapeDataString(lang)}";
+
+    var baseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}";
+    var url = $"{baseUrl}/api/ryanair/search?{query}";
+
+    using var client = http.CreateClient("ryanair");
+    var json = await GetStringWithRetryAsync(client, url, ct);
+    var response = JsonSerializer.Deserialize<RyanairSearchResponse>(json, new JsonSerializerOptions(JsonSerializerDefaults.Web)
+    {
+        PropertyNameCaseInsensitive = true
+    });
+
+    return response?.Deals ?? new List<DealResult>();
+}
+
+app.MapPost("/api/agent/chat", async (
+    AgentChatRequest request,
+    IHttpClientFactory http,
+    HttpContext httpContext,
+    CancellationToken ct) =>
 {
     var lang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.ToLowerInvariant();
     var isSk = lang == "sk";
+    var isDe = lang == "de";
 
     var context = request.TravelContext ?? new AgentTravelContext(
         Origin: null,
@@ -438,18 +933,17 @@ app.MapPost("/api/agent/chat", (AgentChatRequest request) =>
 
     var missingFields = new List<string>();
 
-    if (string.IsNullOrWhiteSpace(context.DestinationIdea) && string.IsNullOrWhiteSpace(context.DestinationSearch))
-        missingFields.Add("destination");
+    if (string.IsNullOrWhiteSpace(context.Origin))
+        missingFields.Add("origin");
     if (context.MaxBudget is null)
         missingFields.Add("budget");
-    if (context.MaxDistanceKm is null)
-        missingFields.Add("distance");
     if (string.IsNullOrWhiteSpace(context.Month))
         missingFields.Add("month");
 
     var brief = BuildAgentTravelBrief(context, isSk);
     var missingLabels = missingFields.Select(field => field switch
     {
+        "origin" => isSk ? "letisko odletu" : "origin airport",
         "destination" => isSk ? "kam alebo aký vibe tripu" : "where to go or the trip vibe",
         "budget" => isSk ? "rozpočet" : "budget",
         "distance" => isSk ? "maximálnu vzdialenosť" : "maximum distance",
@@ -459,20 +953,153 @@ app.MapPost("/api/agent/chat", (AgentChatRequest request) =>
     var assistantText = missingFields.Count > 0
         ? (isSk
             ? $"Mám zatiaľ uložené: {brief}. Aby vedel reálny AI agent nájsť najlepšie trasy, ešte potrebujem doplniť: {string.Join(", ", missingLabels)}. Napíš mi kam chceš ísť alebo aký typ tripu hľadáš, aký máš rozpočet, ako ďaleko chceš letieť a kedy chceš cestovať."
-            : $"I've captured: {brief}. Before the real AI agent starts ranking routes, I still need: {string.Join(", ", missingLabels)}. Tell me where you want to go or the trip vibe, your budget, how far you're willing to fly, and when you want to travel.")
-        : (isSk
-            ? $"Super, brief pre agenta je pripravený: {brief}. Reálny AI agent teraz môže vyhľadať trasy, porovnať value podľa vzdialenosti a vysvetliť, prečo sa hodia."
-            : $"Great, the agent brief is ready: {brief}. The real AI agent can now search routes, compare value by distance, and explain why each option fits.");
+            : isDe
+                ? $"Ich habe bisher: {brief}. Damit der AI-Agent die besten Routen ranken kann, brauche ich noch: {string.Join(", ", missingLabels)}. Sag mir Ziel/Trip-Vibe, Budget, Distanzlimit und Reisezeitraum."
+                : $"I've captured: {brief}. Before the real AI agent starts ranking routes, I still need: {string.Join(", ", missingLabels)}. Tell me where you want to go or the trip vibe, your budget, how far you're willing to fly, and when you want to travel.")
+        : string.Empty;
 
-    var suggestedReplies = BuildAgentSuggestedReplies(context, missingFields, isSk);
+    if (missingFields.Count > 0)
+    {
+        var suggestedReplies = BuildAgentSuggestedReplies(context, missingFields, isSk);
+        var llmMissing = !string.IsNullOrWhiteSpace(openAiApiKey)
+            ? await AskOpenAiAgentAsync(
+                openAiApiKey!,
+                openAiModel!,
+                lang,
+                context,
+                brief,
+                missingFields,
+                Array.Empty<DealResult>(),
+                request.Messages ?? new List<AgentChatMessage>(),
+                http,
+                ct)
+            : null;
+
+        var finalText = llmMissing?.AssistantMessage ?? assistantText;
+        var missingReplies = llmMissing?.SuggestedReplies?.Length > 0
+            ? llmMissing.SuggestedReplies
+            : suggestedReplies;
+
+        return Results.Ok(new AgentChatResponse(
+            Status: "needs-more-info",
+            AssistantMessage: new AgentChatMessage("assistant", finalText),
+            TravelContext: context,
+            TravelBrief: brief,
+            MissingFields: missingFields.ToArray(),
+            SuggestedReplies: missingReplies,
+            DealShortlist: Array.Empty<AgentDealCard>()));
+    }
+
+    List<DealResult> deals;
+    try
+    {
+        deals = await FetchAgentDealsAsync(context, lang, http, httpContext, ct);
+    }
+    catch
+    {
+        var fallbackMessage = isSk
+            ? $"Brief je pripravený: {brief}. Momentálne sa mi nepodarilo načítať flight deals, skús to prosím znova o chvíľu."
+            : isDe
+                ? $"Dein Brief ist bereit: {brief}. Ich konnte Deals gerade nicht laden, bitte versuche es gleich noch einmal."
+                : $"Your brief is ready: {brief}. I could not load flight deals right now, please try again in a moment.";
+
+        return Results.Ok(new AgentChatResponse(
+            Status: "ready-for-agent",
+            AssistantMessage: new AgentChatMessage("assistant", fallbackMessage),
+            TravelContext: context,
+            TravelBrief: brief,
+            MissingFields: Array.Empty<string>(),
+            SuggestedReplies: BuildAgentDealSuggestions(isSk),
+            DealShortlist: Array.Empty<AgentDealCard>()));
+    }
+
+    var candidateDeals = deals
+        .Where(d => context.MaxDistanceKm is null || d.DistanceKm <= context.MaxDistanceKm.Value)
+        .Where(d => context.MinDistanceKm is null || d.DistanceKm >= context.MinDistanceKm.Value)
+        .OrderBy(d => d.PricePerKm)
+        .ThenBy(d => d.Price)
+        .ToList();
+
+    var budgetFilteredDeals = candidateDeals
+        .Where(d => context.MaxBudget is null || d.Price <= context.MaxBudget.Value)
+        .ToList();
+
+    if (context.PreferWeekend)
+    {
+        var weekendDeals = budgetFilteredDeals.Where(d => IsWeekendDate(d.Date)).ToList();
+        if (weekendDeals.Count > 0)
+            budgetFilteredDeals = weekendDeals;
+    }
+
+    var hasDestinationConstraint =
+        !string.IsNullOrWhiteSpace(context.DestinationSearch) ||
+        !string.IsNullOrWhiteSpace(context.DestinationIdea);
+
+    var constrainedDeals = hasDestinationConstraint
+        ? budgetFilteredDeals.Where(d => DealMatchesDestination(d, context)).ToList()
+        : budgetFilteredDeals;
+
+    if (hasDestinationConstraint && constrainedDeals.Count == 0)
+    {
+        var anchor = await ResolveDestinationAnchorAsync(context, lang, http, ct);
+        var alternatives = BuildAlternativeDealShortlist(candidateDeals, context, lang, anchor);
+
+        if (alternatives.Length > 0)
+        {
+            var targetLabel = context.DestinationIdea ?? context.DestinationSearch ?? "destination";
+            var altMessage = isSk
+                ? $"Pre cieľ {targetLabel} som nenašiel priame deals. Ponúkam ALTERNATÍVY (blízke huby), ktoré sa najviac hodia k tvojmu briefu."
+                : isDe
+                    ? $"Fuer {targetLabel} habe ich keine direkten Deals gefunden. Hier sind ALTERNATIVEN (nahe Hubs), die am besten zu deinem Brief passen."
+                    : $"I couldn't find direct deals for {targetLabel}. Here are ALTERNATIVES (nearby hubs) that best fit your brief.";
+
+            var altReplies = isSk
+                ? new[] { "Ukáž najbližšie alternatívy.", "Skús vyšší rozpočet pre pôvodný cieľ.", "Skús iný víkend.", "Hľadaj iba priame lety." }
+                : isDe
+                    ? new[] { "Zeig die naechsten Alternativen.", "Erhoehe Budget fuer das Originalziel.", "Anderes Wochenenddatum pruefen.", "Nur Direktfluege suchen." }
+                    : new[] { "Show nearest alternatives", "Raise budget for original destination", "Try another weekend", "Search direct flights only" };
+
+            return Results.Ok(new AgentChatResponse(
+                Status: "alternatives",
+                AssistantMessage: new AgentChatMessage("assistant", altMessage),
+                TravelContext: context,
+                TravelBrief: brief,
+                MissingFields: Array.Empty<string>(),
+                SuggestedReplies: altReplies,
+                DealShortlist: alternatives));
+        }
+    }
+
+    var topDeals = constrainedDeals.Take(5).ToList();
+    var finalMessage = BuildAgentDealsMessage(context, brief, topDeals, lang);
+    var finalStatus = topDeals.Count > 0 ? "ready-with-deals" : "no-deals";
+    var shortlist = BuildAgentDealShortlist(topDeals, context, lang);
+    var llmWithDeals = !string.IsNullOrWhiteSpace(openAiApiKey)
+        ? await AskOpenAiAgentAsync(
+            openAiApiKey!,
+            openAiModel!,
+            lang,
+            context,
+            brief,
+            Array.Empty<string>(),
+            topDeals,
+            request.Messages ?? new List<AgentChatMessage>(),
+            http,
+            ct)
+        : null;
+    var finalReplies = llmWithDeals?.SuggestedReplies?.Length > 0
+        ? llmWithDeals.SuggestedReplies
+        : BuildAgentDealSuggestions(isSk);
+    var finalAssistantMessage = llmWithDeals?.AssistantMessage ?? finalMessage;
 
     return Results.Ok(new AgentChatResponse(
-        Status: missingFields.Count == 0 ? "ready-for-agent" : "needs-more-info",
-        AssistantMessage: new AgentChatMessage("assistant", assistantText),
+        Status: finalStatus,
+        AssistantMessage: new AgentChatMessage("assistant", finalAssistantMessage),
         TravelContext: context,
         TravelBrief: brief,
-        MissingFields: missingFields.ToArray(),
-        SuggestedReplies: suggestedReplies));
+        MissingFields: Array.Empty<string>(),
+        SuggestedReplies: finalReplies,
+        DealShortlist: shortlist));
 }).RequireRateLimiting("api");
 
 // -------------------- Raw proxy endpoints (optional, useful for debugging) --------------------
@@ -855,7 +1482,20 @@ record AgentChatResponse(
     AgentTravelContext TravelContext,
     string TravelBrief,
     string[] MissingFields,
-    string[] SuggestedReplies);
+    string[] SuggestedReplies,
+    AgentDealCard[] DealShortlist);
+record AgentDealCard(
+    string Destination,
+    string DestinationName,
+    string Date,
+    decimal Price,
+    string Currency,
+    double DistanceKm,
+    double PricePerKm,
+    string Reason,
+    bool IsAlternative);
+record OpenAiAgentResult(string? AssistantMessage, string[] SuggestedReplies);
+record RyanairSearchResponse(List<DealResult>? Deals);
 
 record DealResult(
     string Origin,

@@ -894,6 +894,75 @@
             color: var(--muted);
             font-weight: 600;
         }
+        .ss-agent-deals{
+            margin-top: 12px;
+            display: grid;
+            gap: 8px;
+        }
+        .ss-agent-deals-empty{
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .ss-agent-deal-card{
+            border: 1px solid rgba(0,0,0,0.10);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.95);
+            padding: 10px 11px;
+            box-shadow: 0 12px 24px rgba(15,23,42,0.06);
+        }
+        .ss-agent-deal-head{
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: baseline;
+        }
+        .ss-agent-deal-dst{
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .ss-agent-deal-date{
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        .ss-agent-deal-tag{
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: #0f172a;
+            background: rgba(16,185,129,0.22);
+            border: 1px solid rgba(16,185,129,0.45);
+        }
+        .ss-agent-deal-grid{
+            margin-top: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+        }
+        .ss-agent-deal-k{
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        .ss-agent-deal-v{
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .ss-agent-deal-reason{
+            margin-top: 7px;
+            font-size: 12px;
+            color: var(--text);
+            line-height: 1.4;
+        }
         .ss-agent-hints{
             margin-top: 12px;
             display:flex;
@@ -1885,6 +1954,12 @@
                      data-agent-error="The agent UI is ready, but the real AI worker has not been connected yet."
                      data-agent-error-toast="Agent handoff endpoint is not ready yet."
                      data-agent-meta-default="Your current origin, month, and budget are attached automatically."
+                     data-agent-deals-empty="Shortlist will appear here once enough details are provided."
+                     data-agent-deals-price-label="Price"
+                     data-agent-deals-distance-label="Distance"
+                     data-agent-deals-ppk-label="Price/km"
+                     data-agent-deals-reason-label="Why it fits"
+                     data-agent-deals-alt-label="Alternative"
                      aria-labelledby="agentPanelTitle">
                 <div class="ss-agent-head">
                     <div>
@@ -1898,6 +1973,7 @@
                 </p>
                 <div class="ss-agent-thread" id="agentThread" aria-live="polite"></div>
                 <div class="ss-agent-summary" id="agentSummary"></div>
+                <div class="ss-agent-deals" id="agentDealShortlist"></div>
                 <div class="ss-agent-hints" id="agentQuickReplies">
                     <button class="ss-agent-chip" type="button" data-agent-prompt="I want a weekend city break with the best value flights.">Weekend city break</button>
                     <button class="ss-agent-chip" type="button" data-agent-prompt="I want a warm beach trip under 120 EUR.">Warm beach under €120</button>
@@ -2342,19 +2418,10 @@
         function buildInitialAgentThread() {
             const panel = getAgentPanel();
             const intro = panel?.dataset.agentInitial || "Tell me where you want to go, your budget, and how far you're willing to fly.";
-            const sampleUser = panel?.dataset.agentSampleUser || "";
-            const sampleReply = panel?.dataset.agentSampleReply || "";
-            const thread = [{
+            return [{
                 role: "assistant",
                 content: intro
             }];
-            if (sampleUser && sampleReply) {
-                thread.push(
-                    { role: "user", content: sampleUser },
-                    { role: "assistant", content: sampleReply }
-                );
-            }
-            return thread;
         }
 
         function setAgentMeta(text) {
@@ -2471,6 +2538,54 @@
             `).join("");
         }
 
+        function renderAgentDealShortlist(cards) {
+            const panel = getAgentPanel();
+            const container = document.getElementById("agentDealShortlist");
+            if (!container) return;
+
+            if (!Array.isArray(cards) || cards.length === 0) {
+                container.innerHTML = `<div class="ss-agent-deals-empty">${escapeHtml(panel?.dataset.agentDealsEmpty || "Shortlist will appear here once enough details are provided.")}</div>`;
+                return;
+            }
+
+            const priceLabel = panel?.dataset.agentDealsPriceLabel || "Price";
+            const distanceLabel = panel?.dataset.agentDealsDistanceLabel || "Distance";
+            const ppkLabel = panel?.dataset.agentDealsPpkLabel || "Price/km";
+            const reasonLabel = panel?.dataset.agentDealsReasonLabel || "Why it fits";
+            const alternativeLabel = panel?.dataset.agentDealsAltLabel || "Alternative";
+
+            container.innerHTML = cards.slice(0, 5).map(card => {
+                const price = Number(card.price || 0);
+                const distance = Number(card.distanceKm || 0);
+                const ppk = Number(card.pricePerKm || 0);
+                const currency = card.currency || "EUR";
+
+                return `
+                    <article class="ss-agent-deal-card">
+                        <div class="ss-agent-deal-head">
+                            <div class="ss-agent-deal-dst">${escapeHtml(card.destinationName || card.destination || "")}${card.isAlternative ? `<span class="ss-agent-deal-tag">${escapeHtml(alternativeLabel)}</span>` : ""}</div>
+                            <div class="ss-agent-deal-date">${escapeHtml(card.date || "")}</div>
+                        </div>
+                        <div class="ss-agent-deal-grid">
+                            <div>
+                                <div class="ss-agent-deal-k">${escapeHtml(priceLabel)}</div>
+                                <div class="ss-agent-deal-v">${escapeHtml(currencySymbol(currency))}${escapeHtml(Number.isFinite(price) ? price.toFixed(0) : "-")}</div>
+                            </div>
+                            <div>
+                                <div class="ss-agent-deal-k">${escapeHtml(distanceLabel)}</div>
+                                <div class="ss-agent-deal-v">${escapeHtml(Number.isFinite(distance) ? distance.toFixed(0) : "-")} km</div>
+                            </div>
+                            <div>
+                                <div class="ss-agent-deal-k">${escapeHtml(ppkLabel)}</div>
+                                <div class="ss-agent-deal-v">${escapeHtml(currencySymbol(currency))}${escapeHtml(Number.isFinite(ppk) ? ppk.toFixed(3) : "-")}</div>
+                            </div>
+                        </div>
+                        <div class="ss-agent-deal-reason"><strong>${escapeHtml(reasonLabel)}:</strong> ${escapeHtml(card.reason || "")}</div>
+                    </article>
+                `;
+            }).join("");
+        }
+
         function renderAgentThread() {
             const thread = document.getElementById("agentThread");
             const panel = getAgentPanel();
@@ -2537,6 +2652,7 @@
                 setAgentMeta(payload.travelBrief || "");
                 renderAgentContextSummary(payload.travelContext);
                 renderAgentSuggestedReplies(payload.suggestedReplies);
+                renderAgentDealShortlist(payload.dealShortlist);
                 persistUiToStorage?.();
             } catch (error) {
                 const panel = getAgentPanel();
@@ -2600,6 +2716,7 @@
             setAgentMeta(panel.dataset.agentMetaDefault || "");
             renderAgentThread();
             renderAgentContextSummary();
+            renderAgentDealShortlist([]);
             setAgentPending(false);
         }
 
