@@ -311,3 +311,27 @@ To switch language, navigate to `/SetLanguage?culture=sk&returnUrl=/`.
 ## License
 
 This project is for personal and educational use. Not affiliated with or endorsed by Ryanair DAC.
+
+---
+
+## Description of project 
+
+## Project Description
+
+SocialStrats is a multilingual web application designed to help users discover affordable Ryanair flight deals in an easy, visual, and interactive way. The project focuses on scanning available Ryanair routes from a selected departure airport, comparing ticket prices for a chosen month, and presenting the best travel options through a live map and detailed deal analytics.
+
+The application allows users to search for cheap flights based on budget, destination, month, and travel preferences. Results are ranked not only by price, but also by value using price-per-kilometre calculations. This makes it easier for users to identify destinations that offer the best travel value.
+
+A key feature of the project is the integrated AI trip planner, which helps users describe their ideal trip through a conversation. Based on the user’s preferences, such as budget, distance, destination type, and travel style, the assistant suggests the most relevant flight deals.
+
+SocialStrats also includes practical tools such as a fare calendar, return flight search, saved trips, CSV export, and analytics charts. The application supports English, Slovak, and German, making it accessible to a wider range of users.
+
+The project is built using ASP.NET Core with Razor Pages, C#, JavaScript, Leaflet.js, Chart.js, and the OpenAI API. It uses Ryanair’s public flight data and does not require a database, making it lightweight, stateless, and simple to run locally.
+
+---
+
+## Stanislav Olbert
+
+Ja som do toho projectu pridal možnosť ukaldať si obľúbené lety, prehľad v kalendáry pod každým letom a možnosť hľadania spätného letu.
+
+---
