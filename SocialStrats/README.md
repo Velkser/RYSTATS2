@@ -336,6 +336,47 @@ Ja som do toho projectu pridal možnosť ukaldať si obľúbené lety, prehľad 
 
 Pracoval som s claude AI priamo v PowerShell windows a v chat_history_2026-05-01 súbore je moja história chatu práce s ním.
 
+Pridal som tieto veci
+
+  1. Obľúbené lety (Saved / Favorite Trips)                                                                             
+  - Tlačidlo ❤ na každej karte letu — kliknutím uložíš/odložíš let                                                        - Záložka "❤️ Saved" v pravom paneli so zoznamom uložených letov
+  - Uloženie do localStorage (zostane aj po obnovení stránky)
+  - Tlačidlá "Clear all" a "Export CSV" v záložke obľúbených
+
+  ---
+  2. Modálne okno — Spiatočný let (Return Flight Modal)
+
+  - Tlačidlo "↩️ Return" na každej karte letu (namiesto starého odznaku s cenou)
+  - Po kliknutí sa otvorí popup s:
+    - Informáciami o odchodovom lete
+    - Nastavením počtu dní (tlačidlá − / + alebo priamy vstup) — kedy chceš letieť späť
+    - Presnou cenou spiatočného letu na vypočítaný dátum
+    - Celkovou cenou tam + späť
+    - Farebným kalendárom celého mesiaca (zelená = lacno, červená = draho) — kliknutím na deň sa automaticky aktualizuje
+   výber
+
+  ---
+  3. Kaledár cien (Fare Calendar)
+
+  - Tlačidlo "📅 Calendar" na každej karte letu
+  - Otvorí popup s mriežkou celého mesiaca pre daný spoj
+  - Bunky sú farebne označené podľa ceny (zelená → žltá → oranžová → červená)
+  - Navigácia šípkami medzi mesiacmi
+
+  ---
+  4. Backend endpoint /api/ryanair/calendar
+
+  - Nový API endpoint v Program.cs
+  - Vracia všetky denné ceny pre konkrétny spoj a mesiac
+  - Cachovaný 20 minút
+  - Využíva ho aj kaledár aj modálne okno spiatočného letu
+
+  ---
+  5. README dokumentácia
+
+  - Nový súbor SocialStrats/README.md s kompletnou dokumentáciou projektu (popis, API endpointy, inštalácia,
+  konfigurácia, atď.)
+
 ---
 
 ## Serhi Vielkin
