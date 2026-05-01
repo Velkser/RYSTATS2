@@ -8,26 +8,23 @@
     "net10.0": []
   },
   "packageFolders": {
-    "C:\\Users\\mepla\\.nuget\\packages\\": {},
-    "C:\\Users\\mepla\\AppData\\Roaming\\Godot\\mono\\GodotNuGetFallbackFolder": {},
+    "C:\\Users\\herev\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\mepla\\OneDrive\\Documents\\SocialStrats\\SocialStrats\\SocialStrats\\SocialStrats.csproj",
+      "projectUniqueName": "C:\\Users\\herev\\Documents\\GitHub\\RYSTATS2V\\SocialStrats\\SocialStrats\\SocialStrats.csproj",
       "projectName": "SocialStrats",
-      "projectPath": "C:\\Users\\mepla\\OneDrive\\Documents\\SocialStrats\\SocialStrats\\SocialStrats\\SocialStrats.csproj",
-      "packagesPath": "C:\\Users\\mepla\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\mepla\\OneDrive\\Documents\\SocialStrats\\SocialStrats\\SocialStrats\\obj\\",
+      "projectPath": "C:\\Users\\herev\\Documents\\GitHub\\RYSTATS2V\\SocialStrats\\SocialStrats\\SocialStrats.csproj",
+      "packagesPath": "C:\\Users\\herev\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\herev\\Documents\\GitHub\\RYSTATS2V\\SocialStrats\\SocialStrats\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Users\\mepla\\AppData\\Roaming\\Godot\\mono\\GodotNuGetFallbackFolder",
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\mepla\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Users\\mepla\\AppData\\Roaming\\NuGet\\config\\Godot.Offline.Config",
+        "C:\\Users\\herev\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -36,6 +33,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -54,7 +52,7 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net10.0": {
@@ -78,7 +76,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Users\\mepla\\.dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

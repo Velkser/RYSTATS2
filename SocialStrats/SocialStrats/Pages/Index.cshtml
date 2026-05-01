@@ -1861,6 +1861,254 @@
             opacity: 0.9;
         }
 
+        /* === Favorites & deal actions === */
+        .deal-item { position: relative; }
+        .deal-actions {
+            margin-top: 6px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .deal-fav-btn {
+            background: none;
+            border: 1px solid rgba(0,0,0,0.10);
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 4px 7px;
+            opacity: 0.35;
+            transition: opacity .15s, transform .15s;
+            color: inherit;
+        }
+        .deal-fav-btn:hover { opacity: 0.85; transform: scale(1.12); }
+        .deal-fav-btn.is-fav { opacity: 1; color: #e53935; border-color: rgba(229,57,53,0.30); }
+        .deal-cal-btn {
+            font-size: 11px;
+            padding: 4px 9px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.10);
+            background: rgba(248,250,252,0.90);
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--text);
+            transition: background .12s, border-color .12s;
+        }
+        .deal-cal-btn:hover { background: rgba(0,102,255,0.07); border-color: rgba(0,102,255,0.30); }
+
+        /* === Return button === */
+        .deal-return-btn {
+            font-size: 11px;
+            padding: 4px 9px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,102,255,0.25);
+            background: rgba(0,102,255,0.07);
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--primary);
+            transition: background .12s, border-color .12s;
+        }
+        .deal-return-btn:hover { background: rgba(0,102,255,0.14); border-color: rgba(0,102,255,0.45); }
+
+        /* === Return flight modal === */
+        .return-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.55);
+            z-index: 9600;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            backdrop-filter: blur(4px);
+        }
+        .return-modal-backdrop.open { display: flex; }
+        .return-modal {
+            background: #fff;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 28px 72px rgba(15,23,42,0.24);
+            border: 1px solid rgba(0,0,0,0.10);
+        }
+        .return-modal-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 2;
+            border-radius: 24px 24px 0 0;
+        }
+        .return-modal-title { font-weight: 800; font-size: 16px; color: var(--text); letter-spacing: -0.3px; }
+        .return-modal-sub { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 3px; }
+        .return-modal-body { padding: 16px 20px 24px; display: grid; gap: 16px; }
+
+        .return-section-label {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .return-flight-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,0,0,0.08);
+            background: rgba(248,250,252,0.90);
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .return-flight-row .price { color: var(--success); font-size: 15px; margin-left: auto; }
+
+        .return-days-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .return-days-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.12);
+            background: rgba(248,250,252,0.95);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .12s, border-color .12s;
+        }
+        .return-days-btn:hover { background: rgba(0,102,255,0.08); border-color: rgba(0,102,255,0.35); }
+        .return-days-input {
+            width: 64px;
+            text-align: center;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.12);
+            background: #fff;
+            padding: 6px 4px;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text);
+            outline: none;
+        }
+        .return-days-input:focus { border-color: rgba(0,102,255,0.40); box-shadow: 0 0 0 3px rgba(0,102,255,0.08); }
+        .return-days-label { font-size: 13px; font-weight: 700; color: var(--muted); }
+        .return-date-display {
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 10px;
+            background: rgba(0,102,255,0.06);
+            border: 1px solid rgba(0,102,255,0.18);
+            display: inline-block;
+        }
+
+        .return-result-card {
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,208,132,0.30);
+            background: rgba(0,208,132,0.06);
+        }
+        .return-result-card.no-flight {
+            border-color: rgba(0,0,0,0.08);
+            background: rgba(248,250,252,0.80);
+        }
+        .return-result-price { font-size: 22px; font-weight: 800; color: var(--success); letter-spacing: -0.4px; }
+        .return-result-date { font-size: 12px; font-weight: 700; color: var(--muted); margin-top: 2px; }
+        .return-total-bar {
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(0,102,255,0.22);
+            background: linear-gradient(135deg, rgba(0,102,255,0.06), rgba(255,107,0,0.04));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .return-total-label { font-size: 12px; font-weight: 700; color: var(--muted); }
+        .return-total-value { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+        .return-total-breakdown { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+
+        .return-cal-section .cal-dow { margin-top: 8px; }
+        .cal-cell.return-target {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 2px var(--primary) !important;
+            z-index: 1;
+        }
+        .cal-cell.return-target .cal-day { color: var(--primary); font-weight: 800; }
+
+        /* === Fare calendar modal === */
+        .fare-cal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.55);
+            z-index: 9500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            backdrop-filter: blur(4px);
+        }
+        .fare-cal-backdrop.open { display: flex; }
+        .fare-cal-modal {
+            background: #fff;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 28px 72px rgba(15,23,42,0.22);
+            border: 1px solid rgba(0,0,0,0.10);
+        }
+        .fare-cal-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 2;
+        }
+        .fare-cal-title { font-weight: 800; font-size: 15px; color: var(--text); letter-spacing: -0.2px; }
+        .fare-cal-sub { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 3px; }
+        .fare-cal-body { padding: 16px 20px 20px; }
+        .fare-cal-loading {
+            text-align: center;
+            padding: 28px;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 13px;
+            display: none;
+        }
+        .fare-cal-legend {
+            display: flex;
+            gap: 14px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--muted);
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .fare-cal-legend .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
     </style>
 }
 
@@ -2095,6 +2343,13 @@
                             <input type="number" class="control-ss" id="maxDeals" value="40" min="5" max="200">
                         </div>
                     </div>
+
+                    <div class="row g-2 mt-2">
+                        <div class="col-12">
+                            <div class="form-label-ss">Return month <span style="color:var(--muted);font-size:11px;font-weight:600;">(optional · shows round-trip prices)</span></div>
+                            <input type="month" class="control-ss" id="returnMonth">
+                        </div>
+                    </div>
                     
                     <div class="mt-3">
                         <details id="advancedBox">
@@ -2232,6 +2487,7 @@
                     <div class="chip-row mb-2">
                         <span class="chip active" id="chipViewDeals" onclick="switchRightTab('deals')">📋 Deals</span>
                         <span class="chip" id="chipViewAnalytics" onclick="switchRightTab('analytics')">📊 Analytics</span>
+                        <span class="chip" id="chipViewFavorites" onclick="switchRightTab('favorites')">❤️ Saved</span>
                     </div>
 
                     <div id="rightDeals">
@@ -2320,10 +2576,108 @@
   </div>
 </div>
 
+<div id="rightFavorites" style="display:none;">
+    <div id="favoritesList">
+        <div style="text-align:center; padding: 26px; color: var(--muted); font-weight: 600;">
+            No saved trips yet. Click ❤️ on any deal to save it here.
+        </div>
+    </div>
+    <div class="chip-row mt-2">
+        <span class="chip" onclick="clearAllFavorites()">🗑️ Clear all</span>
+        <span class="chip" onclick="exportFavoritesCsv()">⬇️ Export CSV</span>
+    </div>
+</div>
+
                 </div>
             </div>
         </div>
     </div>
+    <!-- Fare calendar modal -->
+    <div class="fare-cal-backdrop" id="fareCalModal" aria-hidden="true">
+        <div class="fare-cal-modal" role="dialog" aria-modal="true" aria-labelledby="fareCalTitle">
+            <div class="fare-cal-head">
+                <div>
+                    <div class="fare-cal-title" id="fareCalTitle">Fare Calendar</div>
+                    <div class="fare-cal-sub" id="fareCalSub">Loading prices…</div>
+                </div>
+                <button class="btn-ss btn-ss-sm" type="button" onclick="closeFareCal()">✕</button>
+            </div>
+            <div class="fare-cal-body">
+                <div class="fare-cal-legend">
+                    <span class="dot" style="background:rgba(0,180,80,0.7);"></span> Cheap
+                    <span class="dot" style="background:rgba(220,160,0,0.7);"></span> Mid
+                    <span class="dot" style="background:rgba(220,50,50,0.7);"></span> Expensive
+                </div>
+                <div class="cal-dow">
+                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                </div>
+                <div class="cal-grid" id="fareCalGrid"></div>
+                <div class="fare-cal-loading" id="fareCalLoading">Loading fares…</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return flight modal -->
+    <div class="return-modal-backdrop" id="returnModal" aria-hidden="true">
+        <div class="return-modal" role="dialog" aria-modal="true" aria-labelledby="returnModalTitle">
+            <div class="return-modal-head">
+                <div>
+                    <div class="return-modal-title" id="returnModalTitle">↩️ Return Flight</div>
+                    <div class="return-modal-sub" id="returnModalSub">Set your trip length to find the best return fare</div>
+                </div>
+                <button class="btn-ss btn-ss-sm" type="button" onclick="closeReturnModal()">✕</button>
+            </div>
+            <div class="return-modal-body">
+
+                <!-- Outbound summary -->
+                <div>
+                    <div class="return-section-label">Outbound flight</div>
+                    <div class="return-flight-row" id="returnOutboundRow">—</div>
+                </div>
+
+                <!-- Days input -->
+                <div>
+                    <div class="return-section-label">Trip length</div>
+                    <div class="return-days-row">
+                        <button class="return-days-btn" type="button" onclick="changeReturnDays(-1)">−</button>
+                        <input class="return-days-input" id="returnDaysInput" type="number" min="1" max="90" value="7" />
+                        <button class="return-days-btn" type="button" onclick="changeReturnDays(1)">+</button>
+                        <span class="return-days-label">days after departure</span>
+                    </div>
+                    <div class="return-date-display" id="returnDateDisplay">Return date: —</div>
+                </div>
+
+                <!-- Best return result -->
+                <div>
+                    <div class="return-section-label">Return flight on that date</div>
+                    <div id="returnResultCard" class="return-result-card no-flight">
+                        <div style="color:var(--muted);font-weight:600;font-size:13px;">Loading…</div>
+                    </div>
+                </div>
+
+                <!-- Round trip total -->
+                <div class="return-total-bar" id="returnTotalBar" style="display:none;">
+                    <div>
+                        <div class="return-total-label">Round trip total</div>
+                        <div class="return-total-breakdown" id="returnTotalBreakdown"></div>
+                    </div>
+                    <div class="return-total-value" id="returnTotalValue">—</div>
+                </div>
+
+                <!-- Return calendar -->
+                <div class="return-cal-section">
+                    <div class="return-section-label">All return prices this month — click any day</div>
+                    <div class="cal-dow">
+                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                    </div>
+                    <div class="cal-grid" id="returnCalGrid"></div>
+                    <div id="returnCalLoading" style="text-align:center;padding:20px;color:var(--muted);font-weight:600;font-size:13px;display:none;">Loading return fares…</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <!-- Airport picker modal -->
     <div class="airport-modal" id="airportModal" aria-hidden="true">
         <div class="airport-backdrop" onclick="closeAirportPicker(true)"></div>
@@ -3059,9 +3413,9 @@
 
             loadAirportsList().catch(() => showToast("Airports list not loaded yet (you can still type an IATA code).", "warning"));
 
-            // Default mobile: compact map
             applyMapSizeClass();
             updateHeroKpis([], document.getElementById("currency").value, true);
+            updateFavoritesCount();
         }
 
         function initMap() {
@@ -3627,20 +3981,29 @@
 
         // --- Right tab ---
         function switchRightTab(tab) {
-            const deals = document.getElementById("rightDeals");
-            const an = document.getElementById("rightAnalytics");
+            const dealsEl = document.getElementById("rightDeals");
+            const anEl = document.getElementById("rightAnalytics");
+            const favsEl = document.getElementById("rightFavorites");
             const c1 = document.getElementById("chipViewDeals");
             const c2 = document.getElementById("chipViewAnalytics");
+            const c3 = document.getElementById("chipViewFavorites");
+
+            dealsEl.style.display = "none";
+            anEl.style.display = "none";
+            if (favsEl) favsEl.style.display = "none";
+            c1.classList.remove("active");
+            c2.classList.remove("active");
+            if (c3) c3.classList.remove("active");
 
             if (tab === "analytics") {
-                deals.style.display = "none";
-                an.style.display = "block";
-                c1.classList.remove("active");
+                anEl.style.display = "block";
                 c2.classList.add("active");
+            } else if (tab === "favorites") {
+                if (favsEl) favsEl.style.display = "block";
+                if (c3) c3.classList.add("active");
+                renderFavoritesList();
             } else {
-                deals.style.display = "block";
-                an.style.display = "none";
-                c2.classList.remove("active");
+                dealsEl.style.display = "block";
                 c1.classList.add("active");
             }
         }
@@ -3835,6 +4198,10 @@
             `;
         }
 
+        function dealReturnId(deal) {
+            return `${(deal.destination || "").toUpperCase()}_${(deal.date || "").slice(0, 10).replace(/-/g, "")}`;
+        }
+
         function renderDealsList(origin, deals, currency) {
             const list = document.getElementById('dealsList');
             list.innerHTML = '';
@@ -3846,7 +4213,6 @@
 
             const hotThreshold = clampInt(document.getElementById("hotThreshold").value, 1, 99999, 40);
 
-            // origin label with name + code if available
             const originInfo = getAirport(origin);
             const originPretty = airportLabel(origin, originInfo?.name);
 
@@ -3857,9 +4223,9 @@
 
                 const destCode = (deal.destination || "").toString().toUpperCase();
                 const destPretty = airportLabel(destCode, deal.destinationName);
-
                 const destCountry = (deal.destinationCountry || getAirport(destCode)?.country || "").toString().trim();
                 const dur = estimateFlightDurationLabel(deal.distanceKm);
+                const fav = isFavorite(deal);
 
                 const item = document.createElement('div');
                 item.className = 'deal-item' + (key === selectedDealKey ? ' selected' : '');
@@ -3872,8 +4238,7 @@
                 </div>
                 <div class="deal-price">${formatPrice(deal.price, currency)}</div>
             </div>
-
-                        <div class="deal-meta">
+            <div class="deal-meta">
                 <span>📅 ${escapeHtml(formatDate(deal.date))}</span>
                 ${formatTimeRange(deal) ? `<span>🕒 ${escapeHtml(formatTimeRange(deal))}</span>` : ``}
                 ${dur ? `<span>⏱️ ${escapeHtml(dur)}</span>` : ``}
@@ -3881,8 +4246,32 @@
                 <span>🛫 ${escapeHtml(String(deal.distanceKm))} km</span>
                 <span>📏 ${escapeHtml(formatPerKm(deal.pricePerKm, currency))}</span>
             </div>
-
+            <div class="deal-actions">
+                <button class="deal-return-btn" title="Find return flight &amp; set trip length">↩️ Return</button>
+                <button class="deal-cal-btn" title="View fare calendar for this route">📅 Calendar</button>
+                <button class="deal-fav-btn${fav ? ' is-fav' : ''}" title="${fav ? 'Remove from saved' : 'Save this trip'}">❤</button>
+            </div>
         `;
+
+                const returnBtn = item.querySelector(".deal-return-btn");
+                returnBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    openReturnModal(deal);
+                });
+
+                const favBtn = item.querySelector(".deal-fav-btn");
+                favBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(deal);
+                    favBtn.classList.toggle("is-fav", isFavorite(deal));
+                    favBtn.title = isFavorite(deal) ? "Remove from saved" : "Save this trip";
+                });
+
+                const calBtn = item.querySelector(".deal-cal-btn");
+                calBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    openFareCal(deal);
+                });
 
                 item.onclick = () => focusDeal(origin, deal, currency);
                 list.appendChild(item);
@@ -4619,6 +5008,457 @@
             }, 2200);
         })();
 
+        // =========================
+        // FEATURE: Saved / Favorite Trips
+        // =========================
+        const FAV_KEY = "ss_favorites_v1";
+
+        function loadFavorites() {
+            try { return JSON.parse(localStorage.getItem(FAV_KEY) || "[]"); }
+            catch { return []; }
+        }
+
+        function saveFavorites(favs) {
+            try { localStorage.setItem(FAV_KEY, JSON.stringify(favs.slice(0, 200))); }
+            catch {}
+        }
+
+        function isFavorite(deal) {
+            const k = dealKey(deal);
+            return loadFavorites().some(f => dealKey(f) === k);
+        }
+
+        function toggleFavorite(deal) {
+            const favs = loadFavorites();
+            const k = dealKey(deal);
+            const idx = favs.findIndex(f => dealKey(f) === k);
+            if (idx >= 0) {
+                favs.splice(idx, 1);
+                showToast("Removed from saved trips.", "info");
+            } else {
+                favs.unshift(deal);
+                showToast("Trip saved!", "success");
+            }
+            saveFavorites(favs);
+            updateFavoritesCount();
+            const favsEl = document.getElementById("rightFavorites");
+            if (favsEl && favsEl.style.display !== "none") renderFavoritesList();
+        }
+
+        function updateFavoritesCount() {
+            const chip = document.getElementById("chipViewFavorites");
+            if (!chip) return;
+            const count = loadFavorites().length;
+            chip.textContent = count > 0 ? `❤️ Saved (${count})` : `❤️ Saved`;
+        }
+
+        function renderFavoritesList() {
+            const list = document.getElementById("favoritesList");
+            if (!list) return;
+            const favs = loadFavorites();
+
+            if (!favs.length) {
+                list.innerHTML = `<div style="text-align:center; padding: 26px; color: var(--muted); font-weight: 600;">No saved trips yet. Click ❤️ on any deal to save it here.</div>`;
+                return;
+            }
+
+            const currency = document.getElementById("currency").value;
+            const origin = lastSearchMeta.origin || normalizeOriginInput();
+            list.innerHTML = "";
+
+            for (const deal of favs) {
+                const k = dealKey(deal);
+                const destCode = (deal.destination || "").toString().toUpperCase();
+                const destPretty = airportLabel(destCode, deal.destinationName);
+                const dur = estimateFlightDurationLabel(deal.distanceKm);
+
+                const item = document.createElement("div");
+                item.className = "deal-item";
+                item.innerHTML = `
+                    <div class="deal-head">
+                        <div class="deal-route">${escapeHtml(origin || "?")} → ${escapeHtml(destPretty)}</div>
+                        <div class="deal-price">${formatPrice(deal.price, currency)}</div>
+                    </div>
+                    <div class="deal-meta">
+                        <span>📅 ${escapeHtml(formatDate(deal.date))}</span>
+                        ${dur ? `<span>⏱️ ${escapeHtml(dur)}</span>` : ""}
+                        <span>🛫 ${escapeHtml(String(deal.distanceKm))} km</span>
+                        <span>📏 ${escapeHtml(formatPerKm(deal.pricePerKm, currency))}</span>
+                    </div>
+                    <div class="deal-actions">
+                        <button class="deal-cal-btn" title="Fare calendar">📅 Calendar</button>
+                        <button class="deal-fav-btn is-fav" title="Remove from saved">❤</button>
+                    </div>
+                `;
+
+                const favBtn = item.querySelector(".deal-fav-btn");
+                favBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(deal);
+                });
+
+                const calBtn = item.querySelector(".deal-cal-btn");
+                calBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    openFareCal(deal);
+                });
+
+                item.addEventListener("click", () => {
+                    if (deal.originLat && deal.originLng && deal.destLat && deal.destLng)
+                        focusDeal(origin, deal, currency);
+                });
+
+                list.appendChild(item);
+            }
+        }
+
+        function clearAllFavorites() {
+            saveFavorites([]);
+            updateFavoritesCount();
+            renderFavoritesList();
+            showToast("All saved trips cleared.", "info");
+        }
+
+        function exportFavoritesCsv() {
+            const favs = loadFavorites();
+            if (!favs.length) { showToast("No saved trips to export.", "info"); return; }
+            const currency = document.getElementById("currency").value;
+            const origin = lastSearchMeta.origin || normalizeOriginInput();
+            const headers = ["origin","destination","date","price","currency","distanceKm","pricePerKm","destinationName","destinationCountry"];
+            const rows = favs.map(d => [
+                safeCsv(origin), safeCsv(d.destination), safeCsv(d.date), numCsv(d.price),
+                currency, numCsv(d.distanceKm), numCsv(d.pricePerKm),
+                safeCsv(d.destinationName), safeCsv(d.destinationCountry)
+            ]);
+            const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `socialstrats_favorites.csv`;
+            document.body.appendChild(a); a.click(); a.remove();
+            URL.revokeObjectURL(a.href);
+            showToast("Favorites exported.", "success");
+        }
+
+        // =========================
+        // FEATURE: Return Flight Modal
+        // =========================
+        const returnCalCache = new Map();
+        let returnModalState = { deal: null, origin: null, currency: "EUR", days: 7, calData: null, calMonth: null };
+
+        async function openReturnModal(deal) {
+            const modal = document.getElementById("returnModal");
+            if (!modal) return;
+
+            const origin = lastSearchMeta.origin || normalizeOriginInput();
+            const currency = document.getElementById("currency").value;
+            const destCode = (deal.destination || "").toUpperCase();
+            const destPretty = airportLabel(destCode, deal.destinationName);
+            const outDate = (deal.date || "").slice(0, 10);
+
+            returnModalState = { deal, origin, currency, days: returnModalState.days || 7, calData: null, calMonth: null };
+
+            document.getElementById("returnModalTitle").textContent = `↩️ ${destCode} → ${origin}`;
+            document.getElementById("returnModalSub").textContent = `Return from ${escapeHtml(destPretty)} to ${escapeHtml(airportLabel(origin, null))}`;
+            document.getElementById("returnOutboundRow").innerHTML = `
+                <span>✈️ ${escapeHtml(origin)} → ${escapeHtml(destCode)}</span>
+                <span>📅 ${escapeHtml(formatDate(outDate))}</span>
+                <span class="price">${formatPrice(deal.price, currency)}</span>
+            `;
+            document.getElementById("returnDaysInput").value = returnModalState.days;
+            document.getElementById("returnTotalBar").style.display = "none";
+            document.getElementById("returnCalGrid").innerHTML = "";
+
+            modal.classList.add("open");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+
+            await applyReturnDays(returnModalState.days);
+        }
+
+        function closeReturnModal() {
+            const modal = document.getElementById("returnModal");
+            if (!modal) return;
+            modal.classList.remove("open");
+            modal.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+        }
+
+        function changeReturnDays(delta) {
+            const input = document.getElementById("returnDaysInput");
+            const current = parseInt(input?.value || "7", 10);
+            const next = Math.max(1, Math.min(90, (Number.isFinite(current) ? current : 7) + delta));
+            if (input) input.value = next;
+            applyReturnDays(next);
+        }
+
+        async function applyReturnDays(days) {
+            const { deal, origin, currency } = returnModalState;
+            if (!deal) return;
+
+            days = Math.max(1, Math.min(90, parseInt(days, 10) || 7));
+            returnModalState.days = days;
+
+            const outDate = new Date((deal.date || "").slice(0, 10) + "T00:00:00");
+            const retDate = new Date(outDate);
+            retDate.setDate(retDate.getDate() + days);
+            const retDateStr = retDate.toISOString().slice(0, 10);
+            const retMonth = retDateStr.slice(0, 7);
+            const destCode = (deal.destination || "").toUpperCase();
+
+            document.getElementById("returnDateDisplay").textContent = `Return date: ${formatDate(retDateStr)}`;
+
+            // Load calendar data if month changed or first load
+            if (returnModalState.calMonth !== retMonth) {
+                returnModalState.calData = null;
+                returnModalState.calMonth = retMonth;
+                document.getElementById("returnCalLoading").style.display = "block";
+                document.getElementById("returnCalGrid").innerHTML = "";
+                document.getElementById("returnResultCard").className = "return-result-card no-flight";
+                document.getElementById("returnResultCard").innerHTML = `<div style="color:var(--muted);font-weight:600;font-size:13px;">Loading fares for ${retMonth}…</div>`;
+
+                const cacheKey = `${destCode}-${origin}-${retMonth}-${currency}`;
+                if (returnCalCache.has(cacheKey)) {
+                    returnModalState.calData = returnCalCache.get(cacheKey);
+                } else {
+                    try {
+                        const res = await fetch(`/api/ryanair/calendar?origin=${encodeURIComponent(destCode)}&destination=${encodeURIComponent(origin)}&month=${encodeURIComponent(retMonth)}&currency=${encodeURIComponent(currency)}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            const map = {};
+                            for (const f of (data.dailyFares || [])) map[f.date] = Number(f.price);
+                            returnModalState.calData = map;
+                            returnCalCache.set(cacheKey, map);
+                        } else {
+                            returnModalState.calData = {};
+                        }
+                    } catch {
+                        returnModalState.calData = {};
+                    }
+                }
+                document.getElementById("returnCalLoading").style.display = "none";
+            }
+
+            const calData = returnModalState.calData || {};
+            const returnPrice = calData[retDateStr];
+            const resultCard = document.getElementById("returnResultCard");
+            const totalBar = document.getElementById("returnTotalBar");
+
+            if (returnPrice == null) {
+                resultCard.className = "return-result-card no-flight";
+                resultCard.innerHTML = `
+                    <div style="color:var(--muted);font-weight:600;font-size:13px;">No direct return found on ${escapeHtml(formatDate(retDateStr))}.</div>
+                    <div style="color:var(--muted);font-size:12px;margin-top:4px;">Try a different day — click a green cell in the calendar below.</div>
+                `;
+                totalBar.style.display = "none";
+            } else {
+                const total = Number(deal.price) + returnPrice;
+                resultCard.className = "return-result-card";
+                resultCard.innerHTML = `
+                    <div class="return-result-price">${escapeHtml(formatPrice(returnPrice, currency))}</div>
+                    <div class="return-result-date">📅 ${escapeHtml(formatDate(retDateStr))} · ${escapeHtml(destCode)} → ${escapeHtml(origin)}</div>
+                `;
+                totalBar.style.display = "flex";
+                document.getElementById("returnTotalValue").textContent = formatPrice(total, currency);
+                document.getElementById("returnTotalBreakdown").textContent = `${formatPrice(Number(deal.price), currency)} out + ${formatPrice(returnPrice, currency)} back`;
+            }
+
+            renderReturnCalGrid(calData, retMonth, currency, retDateStr, outDate);
+        }
+
+        function renderReturnCalGrid(calData, month, currency, highlightDate, outboundDate) {
+            const grid = document.getElementById("returnCalGrid");
+            if (!grid) return;
+            grid.innerHTML = "";
+
+            const prices = Object.values(calData).filter(Number.isFinite);
+            if (!prices.length) {
+                grid.innerHTML = `<div style="padding:12px;color:var(--muted);font-weight:600;font-size:12px;">No return fares available this month for this route.</div>`;
+                return;
+            }
+
+            const minP = Math.min(...prices);
+            const maxP = Math.max(...prices);
+            const range = Math.max(1, maxP - minP);
+
+            const y = parseInt(month.slice(0, 4), 10);
+            const m = parseInt(month.slice(5, 7), 10) - 1;
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+            const offset = (new Date(y, m, 1).getDay() + 6) % 7;
+
+            for (let i = 0; i < offset; i++) {
+                const cell = document.createElement("div");
+                cell.className = "cal-cell empty";
+                grid.appendChild(cell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dt = new Date(y, m, day);
+                const key = dt.toISOString().slice(0, 10);
+                const price = calData[key];
+                const isTarget = key === highlightDate;
+                const cell = document.createElement("div");
+
+                if (price == null) {
+                    cell.className = "cal-cell empty" + (isTarget ? " return-target" : "");
+                    cell.innerHTML = `<div class="cal-day">${day}</div>`;
+                } else {
+                    const ratio = (price - minP) / range;
+                    const r = Math.round(ratio * 210);
+                    const g = Math.round((1 - ratio) * 160 + 50);
+                    cell.className = "cal-cell has" + (isTarget ? " return-target" : "");
+                    if (!isTarget) {
+                        cell.style.background = `rgba(${r},${g},0,0.10)`;
+                        cell.style.borderColor = `rgba(${r},${g},0,0.45)`;
+                    }
+                    cell.innerHTML = `
+                        <div class="cal-day">${day}</div>
+                        <div class="cal-price">${formatPrice(price, currency)}</div>
+                    `;
+                    cell.title = `${key} · ${formatPrice(price, currency)}`;
+                    const diffDays = Math.round((dt - outboundDate) / 86400000);
+                    cell.style.cursor = "pointer";
+                    cell.addEventListener("click", () => {
+                        const input = document.getElementById("returnDaysInput");
+                        if (input) input.value = diffDays;
+                        applyReturnDays(diffDays);
+                    });
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        // Close return modal on backdrop click or ESC
+        document.getElementById("returnModal")?.addEventListener("click", (e) => {
+            if (e.target === document.getElementById("returnModal")) closeReturnModal();
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && document.getElementById("returnModal")?.classList.contains("open")) closeReturnModal();
+        });
+
+        // Live update when user types in days input
+        document.getElementById("returnDaysInput")?.addEventListener("change", (e) => {
+            applyReturnDays(parseInt(e.target.value, 10) || 7);
+        });
+
+        // =========================
+        // FEATURE: Fare Calendar
+        // =========================
+        async function openFareCal(deal) {
+            const modal = document.getElementById("fareCalModal");
+            if (!modal) return;
+
+            const origin = lastSearchMeta.origin || normalizeOriginInput();
+            const currency = document.getElementById("currency").value;
+            const month = lastSearchMeta.month || document.getElementById("month").value;
+            const destCode = (deal.destination || "").toString().toUpperCase();
+            const destPretty = airportLabel(destCode, deal.destinationName);
+
+            document.getElementById("fareCalTitle").textContent = `${origin} → ${destCode}`;
+            document.getElementById("fareCalSub").textContent = `${escapeHtml(destPretty)} · ${month} · ${currency}`;
+            document.getElementById("fareCalGrid").innerHTML = "";
+            document.getElementById("fareCalLoading").style.display = "block";
+
+            modal.classList.add("open");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+
+            try {
+                const res = await fetch(`/api/ryanair/calendar?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destCode)}&month=${encodeURIComponent(month)}&currency=${encodeURIComponent(currency)}`);
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                renderFareCalGrid(data.dailyFares || [], month, currency, origin, destCode);
+            } catch {
+                document.getElementById("fareCalGrid").innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-weight:600;">Could not load calendar. Route may have no direct fares.</div>`;
+            } finally {
+                document.getElementById("fareCalLoading").style.display = "none";
+            }
+        }
+
+        function renderFareCalGrid(fares, month, currency, origin, destination) {
+            const grid = document.getElementById("fareCalGrid");
+            if (!grid) return;
+            grid.innerHTML = "";
+
+            if (!fares || !fares.length) {
+                grid.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-weight:600;">No fares found for this route this month.</div>`;
+                return;
+            }
+
+            const fareMap = {};
+            for (const f of fares) fareMap[f.date] = Number(f.price);
+
+            const prices = Object.values(fareMap).filter(Number.isFinite);
+            const minP = Math.min(...prices);
+            const maxP = Math.max(...prices);
+            const range = Math.max(1, maxP - minP);
+
+            const y = parseInt(month.slice(0, 4), 10);
+            const m = parseInt(month.slice(5, 7), 10) - 1;
+            const daysInMonth = new Date(y, m + 1, 0).getDate();
+            const offset = (new Date(y, m, 1).getDay() + 6) % 7;
+
+            let bestDate = null, bestPrice = Infinity;
+            for (const [d, p] of Object.entries(fareMap)) {
+                if (p < bestPrice) { bestPrice = p; bestDate = d; }
+            }
+
+            for (let i = 0; i < offset; i++) {
+                const cell = document.createElement("div");
+                cell.className = "cal-cell empty";
+                grid.appendChild(cell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dt = new Date(y, m, day);
+                const key = dt.toISOString().slice(0, 10);
+                const price = fareMap[key];
+                const cell = document.createElement("div");
+
+                if (price == null) {
+                    cell.className = "cal-cell empty";
+                    cell.innerHTML = `<div class="cal-day">${day}</div>`;
+                } else {
+                    const ratio = (price - minP) / range;
+                    const r = Math.round(ratio * 210);
+                    const g = Math.round((1 - ratio) * 160 + 50);
+                    cell.className = "cal-cell has" + (key === bestDate ? " best" : "");
+                    cell.style.background = `rgba(${r},${g},0,0.10)`;
+                    cell.style.borderColor = `rgba(${r},${g},0,0.45)`;
+                    cell.innerHTML = `
+                        <div class="cal-day">${day}</div>
+                        <div class="cal-price">${formatPrice(price, currency)}</div>
+                    `;
+                    cell.title = `${key} · ${formatPrice(price, currency)}`;
+                    const capturedKey = key;
+                    const capturedPrice = price;
+                    cell.addEventListener("click", () => {
+                        showToast(`${capturedKey}: ${formatPrice(capturedPrice, currency)} · ${origin}→${destination}`, "info");
+                    });
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function closeFareCal() {
+            const modal = document.getElementById("fareCalModal");
+            if (!modal) return;
+            modal.classList.remove("open");
+            modal.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+        }
+
+        document.addEventListener("click", (e) => {
+            const modal = document.getElementById("fareCalModal");
+            if (modal && modal.classList.contains("open") && e.target === modal) closeFareCal();
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeFareCal();
+        });
 
     </script>
     
