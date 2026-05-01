@@ -334,4 +334,14 @@ The project is built using ASP.NET Core with Razor Pages, C#, JavaScript, Leafle
 
 Ja som do toho projectu pridal možnosť ukaldať si obľúbené lety, prehľad v kalendáry pod každým letom a možnosť hľadania spätného letu.
 
+Pracoval som s claude AI priamo v PowerShell windows a v chat_history_2026-05-01 súbore je moja história chatu práce s ním.
+
+---
+
+## Serhi Vielkin
+
+---
+
+V adresári RYSTATS2V\SocialStrats\SocialStrats sú dve súbory ktoré dokumentuju môj prínos AI chatbot (AGENT_CHATBOT_DOCUMENTATION, AI_AGENT_HANDOFF_SK).
+
 ---
