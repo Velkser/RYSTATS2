@@ -721,6 +721,64 @@ static async Task<string> GetCachedStringAsync(
     return json;
 }
 
+static List<DailyFare> ParseAllDailyFares(string json)
+{
+    var acc = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+    try
+    {
+        using var doc = JsonDocument.Parse(json);
+        WalkFares(doc.RootElement, acc);
+    }
+    catch { }
+
+    return acc
+        .Select(kv => new DailyFare(kv.Key, kv.Value))
+        .OrderBy(f => f.Date)
+        .ToList();
+
+    static void WalkFares(JsonElement el, Dictionary<string, decimal> acc)
+    {
+        switch (el.ValueKind)
+        {
+            case JsonValueKind.Array:
+                foreach (var item in el.EnumerateArray())
+                    WalkFares(item, acc);
+                break;
+            case JsonValueKind.Object:
+                string? date = null;
+                decimal? price = null;
+
+                if (el.TryGetProperty("dateOut", out var dout) && dout.ValueKind == JsonValueKind.String)
+                    date = dout.GetString();
+                else if (el.TryGetProperty("day", out var day) && day.ValueKind == JsonValueKind.String)
+                    date = day.GetString();
+
+                if (el.TryGetProperty("price", out var p))
+                {
+                    if (p.ValueKind == JsonValueKind.Number) price = p.GetDecimal();
+                    else if (p.ValueKind == JsonValueKind.Object && p.TryGetProperty("value", out var pv) && pv.ValueKind == JsonValueKind.Number)
+                        price = pv.GetDecimal();
+                }
+                else if (el.TryGetProperty("fare", out var f) && f.ValueKind == JsonValueKind.Object &&
+                         f.TryGetProperty("amount", out var fa) && fa.ValueKind == JsonValueKind.Number)
+                {
+                    price = fa.GetDecimal();
+                }
+
+                if (date != null && price != null)
+                {
+                    var key = date.Length >= 10 ? date[..10] : date;
+                    if (!acc.TryGetValue(key, out var existing) || price.Value < existing)
+                        acc[key] = price.Value;
+                }
+
+                foreach (var prop in el.EnumerateObject())
+                    WalkFares(prop.Value, acc);
+                break;
+        }
+    }
+}
+
 static string BuildAgentTravelBrief(AgentTravelContext context, bool isSk)
 {
     var parts = new List<string>();
@@ -1191,6 +1249,46 @@ app.MapGet("/api/ryanair/cheapest", async (
     });
 }).RequireRateLimiting("api");
 
+app.MapGet("/api/ryanair/calendar", async (
+    string origin,
+    string destination,
+    string month,
+    string? currency,
+    IHttpClientFactory http,
+    IMemoryCache cache,
+    CancellationToken ct) =>
+{
+    origin = origin.Trim().ToUpperInvariant();
+    destination = destination.Trim().ToUpperInvariant();
+    currency ??= "EUR";
+
+    DateOnly from;
+    if (month.Length == 7)
+        from = DateOnly.ParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture);
+    else
+        from = DateOnly.Parse(month, CultureInfo.InvariantCulture);
+
+    var to = from.AddMonths(1).AddDays(-1);
+    var url =
+        $"https://www.ryanair.com/api/farfnd/3/oneWayFares/{Uri.EscapeDataString(origin)}/{Uri.EscapeDataString(destination)}/cheapestPerDay" +
+        $"?outboundDateFrom={from:yyyy-MM-dd}&outboundDateTo={to:yyyy-MM-dd}&currency={Uri.EscapeDataString(currency)}";
+
+    using var client = http.CreateClient("ryanair");
+    var cacheKey = $"calendar:{origin}:{destination}:{from:yyyy-MM}:{currency}";
+    string json;
+    try
+    {
+        json = await GetCachedStringAsync(cache, client, cacheKey, url, TimeSpan.FromMinutes(20), ct);
+    }
+    catch
+    {
+        return Results.Problem("Could not fetch fare calendar from Ryanair.");
+    }
+
+    var dailyFares = ParseAllDailyFares(json);
+    return Results.Ok(new { origin, destination, month = from.ToString("yyyy-MM"), currency, dailyFares });
+}).RequireRateLimiting("api");
+
 // -------------------- High-level endpoint the UI uses --------------------
 app.MapGet("/api/ryanair/search", async (
     string origin,
@@ -1461,6 +1559,7 @@ app.Run();
 
 record AirportMeta(string Iata, string Name, string Country, double? Lat, double? Lng);
 record FareSummary(string Date, decimal Price, string? DepartureTime, string? ArrivalTime);
+record DailyFare(string Date, decimal Price);
 record AgentChatMessage(string Role, string Content);
 record AgentTravelContext(
     string? Origin,
