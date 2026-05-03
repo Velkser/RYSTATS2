@@ -505,6 +505,171 @@ Pridal som tieto veci
 ---
 
 ## Serhi Vielkin
+# AI / LLM v projekte SocialStrats
+
+## Čo bolo urobené
+
+V projekte je implementovaný **AI agent na plánovanie letov** postavený nad OpenAI GPT a skutočným Ryanair API. Agent komunikuje s používateľom cez chatové rozhranie na webe (v troch jazykoch: EN / SK / DE), zbiera parametre cesty a vracia personalizovaný shortlist letov.
+
+---
+
+## Technologický stack
+
+| Komponent | Úloha |
+|-----------|-------|
+| **OpenAI GPT** (`gpt-4o-mini` predvolene) | LLM provider: generuje prirodzené odpovede a návrhy na odpoveď |
+| **ASP.NET Core (Program.cs)** | Backend: endpoint agenta, biznis logika, volania Ryanair |
+| **Ryanair verejné API** | Zdroj dát o letoch a trasách |
+| **Razor Pages** (`Index.cshtml`, `Index.sk.cshtml`, `Index.de.cshtml`) | Frontend s chatovým panelom a kartičkami letov |
+| `.env` | Uchováva `OPENAI_API_KEY` a `OPENAI_MODEL` (nie je v gite) |
+
+---
+
+## Ako to funguje
+
+### 1. Konfigurácia
+
+Pri štarte aplikácia načíta `.env`:
+
+```
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+```
+
+Kľúč sa používa len na jednom mieste — pri volaní `AskOpenAiAgentAsync`.
+
+---
+
+### 2. Chat endpoint `POST /api/agent/chat`
+
+Toto je jediný vstupný bod pre AI logiku. Frontend posiela:
+
+```json
+{
+  "messages": [ { "role": "user", "content": "I want a beach trip in May" } ],
+  "travelContext": {
+    "origin": "BTS",
+    "month": "2026-05",
+    "currency": "EUR",
+    "maxBudget": 120,
+    "destinationIdea": "warm beach",
+    "maxDistanceKm": 1500,
+    "preferWeekend": true,
+    "onlyHotDeals": false
+  }
+}
+```
+
+---
+
+### 3. Rozhodovací strom na backende
+
+```
+Prijatý požiadavok
+       │
+       ▼
+Skontrolovať povinné polia:
+  origin, maxBudget, month
+       │
+       ├─ Chýba pole ──► status: "needs-more-info"
+       │                  LLM vygeneruje doplňujúcu otázku
+       │
+       ▼
+Načítať lety (FetchAgentDealsAsync)
+  → GET /api/ryanair/search s rozšíreným rozpočtom (×2 + 120 EUR)
+       │
+       ▼
+Aplikovať filtre:
+  maxDistanceKm, minDistanceKm, preferWeekend, maxBudget
+       │
+       ▼
+Existuje zhoda s destination?
+       │
+       ├─ Žiadne priame lety do hľadaného mesta ──► "alternatives"
+       │   Nájde kotevné letisko cez katalóg Ryanair,
+       │   zoradí najbližšie huby podľa vzdialenosti + ceny,
+       │   označí kartičky ako isAlternative=true
+       │
+       ├─ Lety existujú ──► "ready-with-deals"
+       │
+       └─ Žiadne lety ──► "no-deals"
+       │
+       ▼
+Volanie OpenAI (AskOpenAiAgentAsync):
+  system prompt + kontext cesty + až 8 letov + história chatu
+       │
+       ├─ Úspech ──► assistantMessage + suggestedReplies od LLM
+       └─ Chyba ──► deterministický fallback text
+```
+
+---
+
+### 4. System Prompt
+
+Agent vždy odpovedá v jazyku používateľa (EN / SK / DE). Prompt (`BuildAgentSystemPrompt`):
+
+- Priorita: lety vhodné podľa kontextu, nielen najlacnejšie.
+- Destination je voliteľný — agent navrhne možnosti sám, ak používateľ neurčil mesto.
+- Striktný formát odpovede — **iba JSON** bez Markdown obalenia:
+  ```json
+  {
+    "assistantMessage": "...",
+    "suggestedReplies": ["...", "..."]
+  }
+  ```
+- `temperature: 0.35` — rovnováha medzi predvídateľnosťou a živosťou textu.
+- Do kontextu LLM sa posielajú: language, travelBrief, travelContext, missingFields, posledných 12 správ chatu, až 8 deals.
+
+---
+
+### 5. Režim "Alternatives"
+
+Ak používateľ chce napríklad Paríž, ale priame lety z daného letiska neexistujú:
+
+1. Stiahne katalóg letísk Ryanair (`/api/views/locate/3/airports/{lang}/active`).
+2. Nájde súradnice kotevného letiska (najbližšieho k Paríž).
+3. Zoradí všetky dostupné lety podľa `haversine-vzdialenosti` od kotvy + ceny.
+4. Vráti top-5 alternatív s `isAlternative: true`.
+5. Frontend zobrazí odznak **Alternative** na kartičkách.
+
+---
+
+### 6. Fallback (ak OpenAI nie je dostupný)
+
+Ak kľúč nie je nastavený alebo požiadavka na OpenAI zlyhá — použije sa deterministický text vytvorený funkciami `BuildAgentDealsMessage` / `BuildAgentSuggestedReplies`. Aplikácia funguje aj bez LLM.
+
+---
+
+## Súbory súvisiace s AI/LLM
+
+| Súbor | Čo robí |
+|-------|---------|
+| [Program.cs](Program.cs) | Celý backend: endpoint `/api/agent/chat`, `AskOpenAiAgentAsync`, system prompt, alternatives logika, Ryanair integrácia |
+| [.env](.env) | Kľúč a model OpenAI (ignorovaný v gite) |
+| [Pages/Index.cshtml](Pages/Index.cshtml) | Chat UI (EN): odosiela požiadavky, renderuje kartičky |
+| [Pages/Index.sk.cshtml](Pages/Index.sk.cshtml) | To isté, po slovensky |
+| [Pages/Index.de.cshtml](Pages/Index.de.cshtml) | To isté, po nemecky |
+| [AGENT_CHATBOT_DOCUMENTATION.md](AGENT_CHATBOT_DOCUMENTATION.md) | Technická dokumentácia funkcie |
+
+---
+
+## Spustenie
+
+```bash
+cd "/Users/serhiivielkin/Desktop/cernansky project/RYSTATS2"
+dotnet run --project SocialStrats/SocialStrats/SocialStrats.csproj --urls http://localhost:5303
+```
+
+Otvoriť: `http://localhost:5303`
+
+---
+
+## Obmedzenia
+
+- Každé volanie LLM pridáva oneskorenie (~1–3 sek).
+- Dostupnosť letov Ryanair závisí od ich API a môže sa meniť.
+- Predvolený model je `gpt-4o-mini`; zmeniť ho možno cez `OPENAI_MODEL` v `.env`.
+
 
 ---
 
