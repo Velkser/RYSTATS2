@@ -379,7 +379,15 @@ static AgentDealCard[] BuildAlternativeDealShortlist(
     if (candidateDeals.Count == 0)
         return Array.Empty<AgentDealCard>();
 
-    var ranked = candidateDeals
+    // Alternatives should exclude direct matches to the requested destination.
+    var alternativePool = candidateDeals
+        .Where(d => !DealMatchesDestination(d, context))
+        .ToList();
+
+    if (alternativePool.Count == 0)
+        return Array.Empty<AgentDealCard>();
+
+    var ranked = alternativePool
         .Select(d =>
         {
             double nearKm = double.MaxValue;
@@ -503,6 +511,158 @@ static async Task<OpenAiAgentResult?> AskOpenAiAgentAsync(
             .Take(4)
             .ToArray());
 }
+
+static async Task<AgentTravelContext?> ExtractTravelContextFromConversationAsync(
+    string apiKey,
+    string model,
+    string lang,
+    AgentTravelContext currentContext,
+    IReadOnlyCollection<AgentChatMessage> thread,
+    IHttpClientFactory http,
+    CancellationToken ct)
+{
+    var latestUserMessage = thread
+        .LastOrDefault(m => m.Role == "user" && !string.IsNullOrWhiteSpace(m.Content))
+        ?.Content;
+
+    if (string.IsNullOrWhiteSpace(latestUserMessage))
+        return null;
+
+    var parserPayload = new
+    {
+        language = AgentLanguage(lang),
+        currentContext,
+        latestUserMessage,
+        instructions = "Return only JSON. Extract only values explicitly stated by the user in latestUserMessage. Use null for unknown fields. Month must be yyyy-MM. Origin must be 3-letter IATA code if explicit."
+    };
+
+    var requestBody = new
+    {
+        model,
+        temperature = 0,
+        response_format = new { type = "json_object" },
+        messages = new object[]
+        {
+            new
+            {
+                role = "system",
+                content = "You extract travel search constraints from user text. Return JSON object with keys: origin, month, currency, maxBudget, maxDeals, destinationIdea, destinationSearch, maxDistanceKm, minDistanceKm, preferWeekend, onlyHotDeals, notes. Use null when not explicitly provided. Do not invent values."
+            },
+            new { role = "user", content = JsonSerializer.Serialize(parserPayload) }
+        }
+    };
+
+    using var client = http.CreateClient("openai");
+    using var req = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
+    req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+    req.Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+    using var resp = await client.SendAsync(req, ct);
+    if (!resp.IsSuccessStatusCode)
+        return null;
+
+    var raw = await resp.Content.ReadAsStringAsync(ct);
+    using var doc = JsonDocument.Parse(raw);
+    var content = doc.RootElement
+        .GetProperty("choices")[0]
+        .GetProperty("message")
+        .GetProperty("content")
+        .GetString();
+
+    if (string.IsNullOrWhiteSpace(content))
+        return null;
+
+    AgentTravelContextPatch? patch;
+    try
+    {
+        patch = JsonSerializer.Deserialize<AgentTravelContextPatch>(content, new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            PropertyNameCaseInsensitive = true
+        });
+    }
+    catch
+    {
+        return null;
+    }
+
+    if (patch is null)
+        return null;
+
+    var origin = currentContext.Origin;
+    if (!string.IsNullOrWhiteSpace(patch.Origin))
+    {
+        var normalizedOrigin = patch.Origin.Trim().ToUpperInvariant();
+        if (normalizedOrigin.Length == 3 && normalizedOrigin.All(char.IsLetter))
+            origin = normalizedOrigin;
+    }
+
+    var month = currentContext.Month;
+    if (!string.IsNullOrWhiteSpace(patch.Month))
+    {
+        var rawMonth = patch.Month.Trim();
+        if (DateOnly.TryParseExact(rawMonth + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+            month = rawMonth;
+    }
+
+    var currency = currentContext.Currency;
+    if (!string.IsNullOrWhiteSpace(patch.Currency))
+    {
+        var normalizedCurrency = patch.Currency.Trim().ToUpperInvariant();
+        if (normalizedCurrency.Length == 3 && normalizedCurrency.All(char.IsLetter))
+            currency = normalizedCurrency;
+    }
+
+    var maxBudget = patch.MaxBudget ?? currentContext.MaxBudget;
+    var maxDeals = patch.MaxDeals ?? currentContext.MaxDeals;
+
+    var clearsDestinationPreference = ContainsNoDestinationPreference(latestUserMessage);
+    var destinationIdea = clearsDestinationPreference
+        ? null
+        : (string.IsNullOrWhiteSpace(patch.DestinationIdea) ? currentContext.DestinationIdea : patch.DestinationIdea.Trim());
+    var destinationSearch = clearsDestinationPreference
+        ? null
+        : (string.IsNullOrWhiteSpace(patch.DestinationSearch) ? currentContext.DestinationSearch : patch.DestinationSearch.Trim());
+    var maxDistanceKm = patch.MaxDistanceKm ?? currentContext.MaxDistanceKm;
+    var minDistanceKm = patch.MinDistanceKm ?? currentContext.MinDistanceKm;
+    var preferWeekend = patch.PreferWeekend ?? currentContext.PreferWeekend;
+    var onlyHotDeals = patch.OnlyHotDeals ?? currentContext.OnlyHotDeals;
+    var notes = string.IsNullOrWhiteSpace(patch.Notes) ? currentContext.Notes : patch.Notes.Trim();
+
+    return new AgentTravelContext(
+        Origin: origin,
+        Month: month,
+        Currency: currency,
+        MaxBudget: maxBudget,
+        MaxDeals: maxDeals,
+        DestinationIdea: destinationIdea,
+        DestinationSearch: destinationSearch,
+        MaxDistanceKm: maxDistanceKm,
+        MinDistanceKm: minDistanceKm,
+        PreferWeekend: preferWeekend,
+        OnlyHotDeals: onlyHotDeals,
+        Notes: notes);
+}
+
+static bool ContainsNoDestinationPreference(string text)
+{
+    if (string.IsNullOrWhiteSpace(text))
+        return false;
+
+    var v = text.Trim().ToLowerInvariant();
+
+    return v.Contains("no preference") ||
+           v.Contains("no city preference") ||
+           v.Contains("any city") ||
+           v.Contains("anywhere") ||
+           v.Contains("wherever") ||
+           v.Contains("bez preferencie") ||
+           v.Contains("bez preferencie mesta") ||
+           v.Contains("lubovolne mesto") ||
+           v.Contains("egal welche stadt") ||
+           v.Contains("keine praeferenz") ||
+           v.Contains("kein bevorzugtes ziel");
+}
+
 static async Task<(string? depIso, string? arrIso)> TryGetFlightTimesAsync(
     IMemoryCache cache,
     HttpClient client,
@@ -952,11 +1112,52 @@ static async Task<List<DealResult>> FetchAgentDealsAsync(
                 $"&maxDeals={maxDeals}" +
                 $"&lang={Uri.EscapeDataString(lang)}";
 
-    var baseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}";
-    var url = $"{baseUrl}/api/ryanair/search?{query}";
+    var host = httpContext.Request.Host.Host;
+    var primaryBaseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}";
 
-    using var client = http.CreateClient("ryanair");
-    var json = await GetStringWithRetryAsync(client, url, ct);
+    var isLocalHost = host.Equals("localhost", StringComparison.OrdinalIgnoreCase) || host.Equals("127.0.0.1");
+    var candidateBaseUrls = new List<string> { primaryBaseUrl };
+    if (isLocalHost)
+        candidateBaseUrls.Add($"https://{host}:7043");
+
+    using var localHandler = isLocalHost
+        ? new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = static (request, _, _, errors) =>
+                (request?.RequestUri?.Host?.Equals("localhost", StringComparison.OrdinalIgnoreCase) == true ||
+                 request?.RequestUri?.Host == "127.0.0.1")
+                ? true
+                : errors == System.Net.Security.SslPolicyErrors.None
+        }
+        : null;
+
+    using var localClient = isLocalHost
+        ? new HttpClient(localHandler!) { Timeout = TimeSpan.FromSeconds(20) }
+        : null;
+
+    using var factoryClient = !isLocalHost ? http.CreateClient("ryanair") : null;
+
+    string? json = null;
+    Exception? lastError = null;
+
+    foreach (var baseUrl in candidateBaseUrls.Distinct(StringComparer.OrdinalIgnoreCase))
+    {
+        var url = $"{baseUrl}/api/ryanair/search?{query}";
+        try
+        {
+            var client = isLocalHost ? localClient! : factoryClient!;
+            json = await GetStringWithRetryAsync(client, url, ct);
+            break;
+        }
+        catch (Exception ex)
+        {
+            lastError = ex;
+        }
+    }
+
+    if (json is null)
+        throw lastError ?? new InvalidOperationException("Unable to load agent deals from local search endpoint.");
+
     var response = JsonSerializer.Deserialize<RyanairSearchResponse>(json, new JsonSerializerOptions(JsonSerializerDefaults.Web)
     {
         PropertyNameCaseInsensitive = true
@@ -988,6 +1189,21 @@ app.MapPost("/api/agent/chat", async (
         PreferWeekend: false,
         OnlyHotDeals: false,
         Notes: null);
+
+    if (!string.IsNullOrWhiteSpace(openAiApiKey))
+    {
+        var extractedContext = await ExtractTravelContextFromConversationAsync(
+            openAiApiKey!,
+            openAiModel!,
+            lang,
+            context,
+            request.Messages ?? new List<AgentChatMessage>(),
+            http,
+            ct);
+
+        if (extractedContext is not null)
+            context = extractedContext;
+    }
 
     var missingFields = new List<string>();
 
@@ -1096,6 +1312,34 @@ app.MapPost("/api/agent/chat", async (
     var constrainedDeals = hasDestinationConstraint
         ? budgetFilteredDeals.Where(d => DealMatchesDestination(d, context)).ToList()
         : budgetFilteredDeals;
+
+    if (hasDestinationConstraint && constrainedDeals.Count == 0)
+    {
+        var relaxedDirectDeals = deals
+            .Where(d => DealMatchesDestination(d, context))
+            .OrderBy(d => d.PricePerKm)
+            .ThenBy(d => d.Price)
+            .Take(5)
+            .ToList();
+
+        if (relaxedDirectDeals.Count > 0)
+        {
+            var relaxedMessage = isSk
+                ? $"Našiel som priame výsledky pre cieľ ({context.DestinationIdea ?? context.DestinationSearch}), ale nespĺňajú všetky aktuálne filtre (budget/vzdialenosť/víkend). Tu sú najlepšie priame možnosti mimo prísnych filtrov."
+                : isDe
+                    ? $"Ich habe direkte Treffer fuer ({context.DestinationIdea ?? context.DestinationSearch}) gefunden, aber sie erfuellen nicht alle aktuellen Filter (Budget/Distanz/Wochenende). Hier sind die besten direkten Optionen ausserhalb der strengen Filter."
+                    : $"I found direct matches for ({context.DestinationIdea ?? context.DestinationSearch}), but they do not meet all current filters (budget/distance/weekend). Here are the best direct options outside strict filters.";
+
+            return Results.Ok(new AgentChatResponse(
+                Status: "direct-relaxed",
+                AssistantMessage: new AgentChatMessage("assistant", relaxedMessage),
+                TravelContext: context,
+                TravelBrief: brief,
+                MissingFields: Array.Empty<string>(),
+                SuggestedReplies: BuildAgentDealSuggestions(isSk),
+                DealShortlist: BuildAgentDealShortlist(relaxedDirectDeals, context, lang)));
+        }
+    }
 
     if (hasDestinationConstraint && constrainedDeals.Count == 0)
     {
@@ -1573,6 +1817,20 @@ record AgentTravelContext(
     int? MinDistanceKm,
     bool PreferWeekend,
     bool OnlyHotDeals,
+    string? Notes);
+
+record AgentTravelContextPatch(
+    string? Origin,
+    string? Month,
+    string? Currency,
+    decimal? MaxBudget,
+    int? MaxDeals,
+    string? DestinationIdea,
+    string? DestinationSearch,
+    int? MaxDistanceKm,
+    int? MinDistanceKm,
+    bool? PreferWeekend,
+    bool? OnlyHotDeals,
     string? Notes);
 record AgentChatRequest(List<AgentChatMessage>? Messages, AgentTravelContext? TravelContext);
 record AgentChatResponse(
