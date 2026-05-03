@@ -507,6 +507,8 @@ Pridal som tieto veci
 ## Serhi Vielkin
 # AI / LLM v projekte SocialStrats
 
+
+### VIDEO - https://drive.google.com/file/d/1_5iTskNsZ1itEGE9Nos_Eo2rBByxJ2X_/view?usp=sharing
 ## Čo bolo urobené
 
 V projekte je implementovaný **AI agent na plánovanie letov** postavený nad OpenAI GPT a skutočným Ryanair API. Agent komunikuje s používateľom cez chatové rozhranie na webe (v troch jazykoch: EN / SK / DE), zbiera parametre cesty a vracia personalizovaný shortlist letov.
