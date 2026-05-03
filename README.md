@@ -1,5 +1,16 @@
 # SocialStrats - skener výhodných leteniek Ryanair
 
+## Nasadená verzia aplikácie
+
+Aplikácia je dostupná online na adrese:
+
+[https://rystats.azurewebsites.net/](https://rystats.azurewebsites.net/)
+
+Nasadená verzia obsahuje funkčný skener letov, mapu, filtrovanie, kalendár cien, uložené lety a ďalšie časti aplikácie. AI chat asistent však v tejto verzii není aktívny, pretože na jeho spustenie je potrebné doplniť platný `OPENAI_API_KEY` v nastaveniach prostredia.
+
+Bez OpenAI kľúča zostáva aplikácia použiteľná na vyhľadávanie a porovnávanie letov. Obmedzená je iba AI časť.
+
+
 SocialStrats je webová aplikácia na hľadanie lacných letov Ryanair. Používateľ si vyberie odletové letisko, mesiac a rozpočet, aplikácia prejde dostupné trasy a výsledky zobrazí na interaktívnej mape. Okrem klasického zoznamu letov ukazuje aj hodnotu letu cez cenu za kilometer a ponúka AI asistenta, ktorý pomáha nájsť vhodnú destináciu podľa preferencií.
 
 ---
