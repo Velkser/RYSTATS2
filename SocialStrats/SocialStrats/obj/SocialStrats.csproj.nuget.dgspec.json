@@ -1,23 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\herev\\Documents\\GitHub\\RYSTATS2V\\SocialStrats\\SocialStrats\\SocialStrats.csproj": {}
+    "C:\\Users\\mepla\\OneDrive\\Documents\\SocialStrats\\NestStats2\\NestStats2\\RYSTATS2_new\\SocialStrats\\SocialStrats\\SocialStrats.csproj": {}
   },
   "projects": {
-    "C:\\Users\\herev\\Documents\\GitHub\\RYSTATS2V\\SocialStrats\\SocialStrats\\SocialStrats.csproj": {
+    "C:\\Users\\mepla\\OneDrive\\Documents\\SocialStrats\\NestStats2\\NestStats2\\RYSTATS2_new\\SocialStrats\\SocialStrats\\SocialStrats.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\herev\\Documents\\GitHub\\RYSTATS2V\\SocialStrats\\SocialStrats\\SocialStrats.csproj",
+        "projectUniqueName": "C:\\Users\\mepla\\OneDrive\\Documents\\SocialStrats\\NestStats2\\NestStats2\\RYSTATS2_new\\SocialStrats\\SocialStrats\\SocialStrats.csproj",
         "projectName": "SocialStrats",
-        "projectPath": "C:\\Users\\herev\\Documents\\GitHub\\RYSTATS2V\\SocialStrats\\SocialStrats\\SocialStrats.csproj",
-        "packagesPath": "C:\\Users\\herev\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\herev\\Documents\\GitHub\\RYSTATS2V\\SocialStrats\\SocialStrats\\obj\\",
+        "projectPath": "C:\\Users\\mepla\\OneDrive\\Documents\\SocialStrats\\NestStats2\\NestStats2\\RYSTATS2_new\\SocialStrats\\SocialStrats\\SocialStrats.csproj",
+        "packagesPath": "C:\\Users\\mepla\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\mepla\\OneDrive\\Documents\\SocialStrats\\NestStats2\\NestStats2\\RYSTATS2_new\\SocialStrats\\SocialStrats\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
+          "C:\\Users\\mepla\\AppData\\Roaming\\Godot\\mono\\GodotNuGetFallbackFolder",
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\herev\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\mepla\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\mepla\\AppData\\Roaming\\NuGet\\config\\Godot.Offline.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],

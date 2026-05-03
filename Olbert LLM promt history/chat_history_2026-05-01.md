@@ -169,7 +169,7 @@ Generated `README.md` at `C:\Users\herev\Documents\GitHub\RYSTATS2V\SocialStrats
 - **Local Dev Tips**
 - **License**
 
-Also flagged a security concern: `.env.example` appeared to contain a real OpenAI API key. Recommended rotating it at platform.openai.com/api-keys and replacing with a placeholder like `sk-proj-your-real-key-here`.
+Also flagged a security concern: `.env.example` appeared to contain a real OpenAI API key. Recommended rotating it at platform.openai.com/api-keys and replacing it with a neutral placeholder like `your-openai-api-key-here`.
 
 ---
 
