@@ -1,69 +1,71 @@
-# SocialStrats — Ryanair Flight Deal Scanner
+# SocialStrats - skener výhodných leteniek Ryanair
 
-A multilingual web application for finding cheap Ryanair flights, comparing deals on a live map, and planning trips with an AI-powered chat assistant.
-
----
-
-## Overview
-
-SocialStrats scans Ryanair's public flight data for a chosen origin airport and month, ranks results by price and value (price per km), and displays them on an interactive map. An integrated AI agent (powered by OpenAI) helps users define their trip preferences through a conversation and then surfaces the most relevant deals.
+SocialStrats je webová aplikácia na hľadanie lacných letov Ryanair. Používateľ si vyberie odletové letisko, mesiac a rozpočet, aplikácia prejde dostupné trasy a výsledky zobrazí na interaktívnej mape. Okrem klasického zoznamu letov ukazuje aj hodnotu letu cez cenu za kilometer a ponúka AI asistenta, ktorý pomáha nájsť vhodnú destináciu podľa preferencií.
 
 ---
 
-## Features
+## Prehľad projektu
 
-| Feature | Description |
+Cieľom projektu je zjednodušiť hľadanie lacných európskych letov. Namiesto toho, aby používateľ ručne prechádzal jednotlivé destinácie, SocialStrats načíta verejne dostupné dáta Ryanairu, zoradí ich podľa ceny a hodnoty a ukáže ich vizuálne na mape.
+
+Aplikácia je postavená tak, aby bola použiteľná aj bez AI časti. Základný skener letov funguje samostatne. AI trip planner je doplnková funkcia, ktorá používateľovi pomáha cez krátku konverzáciu spresniť rozpočet, vzdialenosť, typ destinácie a štýl výletu.
+
+---
+
+## Hlavné funkcie
+
+| Funkcia | Popis |
 |---|---|
-| **Live deal scan** | Scans all Ryanair routes from your chosen origin airport for the selected month |
-| **Interactive map** | Leaflet-based map with animated plane routes, price labels, and clickable markers |
-| **AI trip planner** | Conversational agent (OpenAI GPT-4o-mini) that takes your budget, distance, and vibe and returns ranked deals |
-| **Fare calendar** | Full month price grid for any specific route, color-coded by price level |
-| **Return flight modal** | Set trip length in days, see the exact return fare, browse a return calendar, get combined round-trip total |
-| **Saved trips** | Save favorite deals to browser localStorage, export as CSV |
-| **Analytics tab** | Price histogram, €/km scatter chart, median/average stats, best day-of-week, calendar view |
-| **Multilingual** | English, Slovak, German (cookie/query string/Accept-Language based switching) |
-| **CSV export** | Export filtered deals or saved favorites to CSV |
+| **Vyhľadávanie letov** | Prejde Ryanair trasy z vybraného odletového letiska pre konkrétny mesiac. |
+| **Interaktívna mapa** | Mapa postavená na Leaflet.js zobrazuje destinácie, ceny, markery a animované trasy. |
+| **AI plánovač výletu** | Konverzačný asistent cez OpenAI API pomáha vybrať lety podľa rozpočtu, vzdialenosti a preferencií. |
+| **Kalendár cien** | Zobrazuje ceny pre konkrétnu trasu počas celého mesiaca a farebne odlišuje lacnejšie a drahšie dni. |
+| **Spiatočný let** | Používateľ vie nastaviť dĺžku pobytu, pozrieť cenu spiatočného letu a porovnať celkovú cenu tam aj späť. |
+| **Uložené lety** | Obľúbené lety sa ukladajú do `localStorage` v prehliadači a dajú sa exportovať do CSV. |
+| **Analytická časť** | Obsahuje histogram cien, graf ceny za kilometer, priemerné a mediánové hodnoty a ďalšie porovnania. |
+| **Viacjazyčnosť** | Rozhranie podporuje angličtinu, slovenčinu a nemčinu. Jazyk sa prepína cez cookie, query string alebo hlavičku prehliadača. |
+| **CSV export** | Výsledky vyhľadávania alebo uložené lety je možné exportovať ako CSV súbor. |
 
 ---
 
-## Tech Stack
+## Použité technológie
 
-| Layer | Technology |
+| Vrstva | Technológia |
 |---|---|
 | Framework | ASP.NET Core (.NET 10), Razor Pages |
-| Language | C# 13 |
+| Jazyk | C# 13 |
 | Frontend | Vanilla JavaScript, HTML5, CSS3 |
-| Map | Leaflet.js 1.9.4 |
-| Charts | Chart.js 4.4.1 |
-| AI | OpenAI API (`gpt-4o-mini` by default) |
-| Data source | Ryanair public API (unofficial, no authentication required) |
-| Caching | ASP.NET Core IMemoryCache |
-| Rate limiting | ASP.NET Core RateLimiter (60 req/min per IP) |
-| Database | None — fully stateless |
+| Mapa | Leaflet.js 1.9.4 |
+| Grafy | Chart.js 4.4.1 |
+| AI | OpenAI API, predvolene `gpt-4o-mini` |
+| Zdroj dát | Verejné Ryanair API, neoficiálne a bez potreby autentifikácie |
+| Cacheovanie | ASP.NET Core IMemoryCache |
+| Rate limiting | ASP.NET Core RateLimiter, 60 požiadaviek za minútu na IP adresu |
+| Databáza | Nepoužíva sa. Aplikácia je bezstavová a dáta drží len dočasne v cache alebo v prehliadači. |
 
 ---
 
-## Project Structure
+## Štruktúra projektu
 
 ```
 SocialStrats/
 ├── SocialStrats.sln
 └── SocialStrats/
-    ├── Program.cs                  # All backend logic, API endpoints, data models
+    ├── Program.cs                  # Backend logika, API endpointy a dátové modely
     ├── SocialStrats.csproj
     ├── appsettings.json
     ├── appsettings.Development.json
-    ├── .env                        # Secret keys (not committed)
-    ├── .env.example                # Template for environment variables
+    ├── .env                        # Lokálne tajné kľúče, necommitujú sa
+    ├── .env.example                # Vzor pre premenné prostredia
     ├── Pages/
-    │   ├── Index.cshtml            # Main page (English) — all UI + JavaScript
+    │   ├── Index.cshtml            # Hlavná anglická stránka, UI a JavaScript
     │   ├── Index.cshtml.cs
-    │   ├── Index.sk.cshtml         # Slovak version
-    │   ├── Index.de.cshtml         # German version
+    │   ├── Index.sk.cshtml         # Slovenská verzia
+    │   ├── Index.de.cshtml         # Nemecká verzia
     │   ├── Privacy.cshtml
-    │   ├── SetLanguage.cshtml      # Language switcher
+    │   ├── SetLanguage.cshtml      # Prepínanie jazyka
     │   └── Shared/
-    │       └── _Layout.cshtml      # Master layout
+    │       └── _Layout.cshtml      # Spoločný layout
     ├── Properties/
     │   └── launchSettings.json
     └── wwwroot/
@@ -74,80 +76,80 @@ SocialStrats/
 
 ---
 
-## Prerequisites
+## Požiadavky na spustenie
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- An [OpenAI API key](https://platform.openai.com/api-keys) (required for the AI planner; the deal scanner works without it)
+- [OpenAI API key](https://platform.openai.com/api-keys), ak chcete používať AI plánovač. Samotné vyhľadávanie letov funguje aj bez neho.
 
 ---
 
-## Setup
+## Spustenie projektu
 
-### 1. Clone the repository
+### 1. Naklonovanie repozitára
 
 ```bash
 git clone https://github.com/PhoeniX987/RYSTATS2V.git
 cd RYSTATS2V/SocialStrats
 ```
 
-### 2. Create your environment file
+### 2. Vytvorenie `.env` súboru
 
-Copy the example and fill in your real values:
+Skopírujte vzorový súbor a doplňte vlastné hodnoty:
 
 ```bash
 cp SocialStrats/.env.example SocialStrats/.env
 ```
 
-Edit `SocialStrats/.env`:
+V súbore `SocialStrats/.env` nastavte:
 
 ```
 OPENAI_API_KEY=sk-proj-your-real-key-here
 OPENAI_MODEL=gpt-4o-mini
 ```
 
-> The `.env` file is in `.gitignore` and will never be committed.
+> Súbor `.env` je v `.gitignore`, takže sa neodovzdáva do repozitára.
 
-### 3. Run the application
+### 3. Spustenie aplikácie
 
 ```bash
 dotnet run --project SocialStrats
 ```
 
-The app will be available at:
+Aplikácia bude dostupná na:
 - HTTP: `http://localhost:5295`
 - HTTPS: `https://localhost:7043`
 
 ---
 
-## Environment Variables
+## Premenné prostredia
 
-| Variable | Required | Default | Description |
+| Premenná | Povinná | Predvolená hodnota | Popis |
 |---|---|---|---|
-| `OPENAI_API_KEY` | No* | — | OpenAI API key for the AI trip planner |
-| `OPENAI_MODEL` | No | `gpt-4o-mini` | OpenAI model to use |
+| `OPENAI_API_KEY` | Nie* | - | OpenAI API kľúč pre AI plánovač výletu. |
+| `OPENAI_MODEL` | Nie | `gpt-4o-mini` | Model použitý pre AI asistenta. |
 
-> *Without `OPENAI_API_KEY` the deal scanner and all other features still work. Only the AI chat assistant is disabled.
+> *Bez `OPENAI_API_KEY` funguje vyhľadávanie letov, mapa, kalendár, uložené lety aj export. Vypnutý bude iba AI chat asistent.
 
 ---
 
-## API Endpoints
+## API endpointy
 
-All endpoints are rate-limited to **60 requests per minute per IP**.
+Všetky endpointy sú chránené limitom **60 požiadaviek za minútu na jednu IP adresu**.
 
 ### `GET /api/ryanair/search`
 
-Main search endpoint. Scans all routes from an origin airport and returns deals sorted by price.
+Hlavný vyhľadávací endpoint. Prejde trasy z vybraného odletového letiska a vráti najlepšie nájdené lety zoradené podľa ceny.
 
-| Parameter | Type | Required | Description |
+| Parameter | Typ | Povinný | Popis |
 |---|---|---|---|
-| `origin` | string | Yes | IATA airport code (e.g. `BTS`, `STN`, `DUB`) |
-| `month` | string | Yes | Travel month in `YYYY-MM` format |
-| `currency` | string | No | Currency code. Default: `EUR` |
-| `maxBudget` | int | No | Maximum price filter. Default: `150` |
-| `maxDeals` | int | No | Maximum results to return. Default: `30` |
-| `lang` | string | No | Language for airport names. Default: `en` |
+| `origin` | string | Áno | IATA kód odletového letiska, napríklad `BTS`, `STN`, `DUB`. |
+| `month` | string | Áno | Mesiac cesty vo formáte `YYYY-MM`. |
+| `currency` | string | Nie | Mena. Predvolená hodnota je `EUR`. |
+| `maxBudget` | int | Nie | Maximálna cena. Predvolená hodnota je `150`. |
+| `maxDeals` | int | Nie | Maximálny počet výsledkov. Predvolená hodnota je `30`. |
+| `lang` | string | Nie | Jazyk názvov letísk. Predvolená hodnota je `en`. |
 
-**Example:**
+**Príklad:**
 ```
 GET /api/ryanair/search?origin=BTS&month=2025-06&currency=EUR&maxBudget=120&maxDeals=40
 ```
@@ -156,16 +158,16 @@ GET /api/ryanair/search?origin=BTS&month=2025-06&currency=EUR&maxBudget=120&maxD
 
 ### `GET /api/ryanair/calendar`
 
-Returns all daily prices for a specific route and month. Used by the fare calendar and return flight modal.
+Vráti denné ceny pre konkrétnu trasu a mesiac. Používa sa v kalendári cien a v modálnom okne pre spiatočný let.
 
-| Parameter | Type | Required | Description |
+| Parameter | Typ | Povinný | Popis |
 |---|---|---|---|
-| `origin` | string | Yes | Departure IATA code |
-| `destination` | string | Yes | Arrival IATA code |
-| `month` | string | Yes | `YYYY-MM` |
-| `currency` | string | No | Default: `EUR` |
+| `origin` | string | Áno | IATA kód odletového letiska. |
+| `destination` | string | Áno | IATA kód príletového letiska. |
+| `month` | string | Áno | Mesiac vo formáte `YYYY-MM`. |
+| `currency` | string | Nie | Mena. Predvolená hodnota je `EUR`. |
 
-**Example:**
+**Príklad:**
 ```
 GET /api/ryanair/calendar?origin=BTS&destination=BCN&month=2025-06&currency=EUR
 ```
@@ -174,43 +176,43 @@ GET /api/ryanair/calendar?origin=BTS&destination=BCN&month=2025-06&currency=EUR
 
 ### `GET /api/ryanair/cheapest`
 
-Returns only the single cheapest fare for a route in a given month.
+Vráti najlacnejšiu cenu pre jednu konkrétnu trasu v danom mesiaci.
 
-| Parameter | Type | Required | Description |
+| Parameter | Typ | Povinný | Popis |
 |---|---|---|---|
-| `origin` | string | Yes | Departure IATA code |
-| `destination` | string | Yes | Arrival IATA code |
-| `month` | string | Yes | `YYYY-MM` |
-| `currency` | string | No | Default: `EUR` |
+| `origin` | string | Áno | IATA kód odletového letiska. |
+| `destination` | string | Áno | IATA kód príletového letiska. |
+| `month` | string | Áno | Mesiac vo formáte `YYYY-MM`. |
+| `currency` | string | Nie | Mena. Predvolená hodnota je `EUR`. |
 
 ---
 
 ### `GET /api/ryanair/airports`
 
-Returns the full list of active Ryanair airports with coordinates and country info.
+Vráti zoznam aktívnych Ryanair letísk vrátane súradníc a krajiny.
 
-| Parameter | Type | Required | Description |
+| Parameter | Typ | Povinný | Popis |
 |---|---|---|---|
-| `lang` | string | No | Language. Default: `en` |
+| `lang` | string | Nie | Jazyk odpovede. Predvolená hodnota je `en`. |
 
 ---
 
 ### `GET /api/ryanair/routes/{origin}`
 
-Returns all routes (destination airports) served by Ryanair from a given origin.
+Vráti všetky destinácie, do ktorých Ryanair lieta z vybraného odletového letiska.
 
-| Parameter | Type | Required | Description |
+| Parameter | Typ | Povinný | Popis |
 |---|---|---|---|
-| `origin` | string | Yes | Origin IATA code (path parameter) |
-| `lang` | string | No | Default: `en` |
+| `origin` | string | Áno | IATA kód odletového letiska v URL ceste. |
+| `lang` | string | Nie | Jazyk odpovede. Predvolená hodnota je `en`. |
 
 ---
 
 ### `POST /api/agent/chat`
 
-AI trip planner endpoint. Accepts a conversation thread and travel context, returns an assistant message and ranked deal shortlist.
+Endpoint pre AI plánovač výletu. Prijíma históriu konverzácie a cestovný kontext. Vráti odpoveď asistenta a krátky zoznam odporúčaných letov.
 
-**Request body:**
+**Telo požiadavky:**
 ```json
 {
   "messages": [
@@ -230,7 +232,7 @@ AI trip planner endpoint. Accepts a conversation thread and travel context, retu
 }
 ```
 
-**Response:**
+**Odpoveď:**
 ```json
 {
   "status": "ready-with-deals",
@@ -257,76 +259,188 @@ AI trip planner endpoint. Accepts a conversation thread and travel context, retu
 
 ---
 
-## Caching
+## Cacheovanie
 
-| Data | TTL |
+| Dáta | Platnosť cache |
 |---|---|
-| Airport catalog | 12 hours |
-| Routes per origin | 6 hours |
-| Cheapest fares per corridor | 20 minutes |
-| Booking availability | 30 minutes |
-| Fare calendar | 20 minutes |
+| Katalóg letísk | 12 hodín |
+| Trasy pre odletové letisko | 6 hodín |
+| Najlacnejšie ceny pre konkrétnu trasu | 20 minút |
+| Dostupnosť rezervácie | 30 minút |
+| Kalendár cien | 20 minút |
 
-Caching is in-memory and resets on server restart.
+Cache je uložená iba v pamäti aplikácie. Po reštarte servera sa vymaže.
 
 ---
 
-## Language Support
+## Jazyková podpora
 
-The UI is available in three languages. The active language is determined in this priority order:
+Rozhranie je dostupné v troch jazykoch: angličtina, slovenčina a nemčina. Aktívny jazyk sa vyberá v tomto poradí:
 
 1. Cookie (`ss_lang`)
 2. Query string (`?culture=sk`)
-3. Browser `Accept-Language` header
+3. Hlavička prehliadača `Accept-Language`
 
-**Supported codes:** `en` (English), `sk` (Slovak), `de` (German)
+**Podporované kódy:** `en` (angličtina), `sk` (slovenčina), `de` (nemčina)
 
-To switch language, navigate to `/SetLanguage?culture=sk&returnUrl=/`.
+Prepnutie jazyka je možné cez:
 
----
-
-## How the Deal Scanner Works
-
-1. Fetches the full Ryanair airport catalog (cached 12h)
-2. Fetches all routes from the chosen origin (cached 6h)
-3. For each destination route, calls the Ryanair `cheapestPerDay` API to get the cheapest fare in the selected month (cached 20min, up to 4 concurrent requests)
-4. Filters results by `maxBudget`
-5. Calculates distance using the Haversine formula
-6. Returns deals sorted by price, including price-per-km for value comparison
-
-> **Note:** This app uses Ryanair's unofficial public API. It has no affiliation with Ryanair. The API may change or become unavailable at any time.
+```
+/SetLanguage?culture=sk&returnUrl=/
+```
 
 ---
 
-## Known Limitations
+## Ako funguje vyhľadávač letov
 
-- **One origin at a time** — the scanner searches from a single departure airport per scan
-- **One-way focus** — the main scan is one-way; return fares are fetched separately via the Return modal
-- **No user accounts** — saved trips use browser `localStorage` and are not synced across devices
-- **Ryanair only** — does not cover other airlines
-- **Unofficial API** — Ryanair may rate-limit or change their API endpoints without notice; the app includes retry logic with exponential backoff
+1. Aplikácia načíta katalóg Ryanair letísk a uloží ho do cache na 12 hodín.
+2. Pre zvolené odletové letisko načíta dostupné trasy a uloží ich do cache na 6 hodín.
+3. Pre každú destináciu zavolá Ryanair `cheapestPerDay` API a zistí najlacnejší let vo vybranom mesiaci.
+4. Výsledky filtruje podľa `maxBudget`.
+5. Vzdialenosť medzi letiskami počíta pomocou Haversine vzorca.
+6. Výsledky vracia zoradené podľa ceny a dopĺňa aj hodnotu ceny za kilometer.
 
----
-
-## License
-
-This project is for personal and educational use. Not affiliated with or endorsed by Ryanair DAC.
+> **Poznámka:** Aplikácia používa neoficiálne verejné API Ryanair. Projekt nie je prepojený so spoločnosťou Ryanair a Ryanair ho nepodporuje. Endpointy sa môžu zmeniť alebo prestať fungovať.
 
 ---
 
-## Description of project 
+## Známe obmedzenia
 
-## Project Description
+- **Jedno odletové letisko naraz** - vyhľadávanie prebieha vždy z jedného zvoleného letiska.
+- **Hlavné vyhľadávanie je jednosmerné** - spiatočné lety sa riešia samostatne cez Return modal.
+- **Bez používateľských účtov** - uložené lety sú iba v `localStorage` prehliadača a nesynchronizujú sa medzi zariadeniami.
+- **Iba Ryanair** - aplikácia momentálne nepokrýva iné letecké spoločnosti.
+- **Neoficiálne API** - Ryanair môže endpointy zmeniť, obmedziť alebo dočasne blokovať. Aplikácia preto používa cache, retry logiku a obmedzenie počtu požiadaviek.
 
-SocialStrats is a multilingual web application designed to help users discover affordable Ryanair flight deals in an easy, visual, and interactive way. The project focuses on scanning available Ryanair routes from a selected departure airport, comparing ticket prices for a chosen month, and presenting the best travel options through a live map and detailed deal analytics.
+---
 
-The application allows users to search for cheap flights based on budget, destination, month, and travel preferences. Results are ranked not only by price, but also by value using price-per-kilometre calculations. This makes it easier for users to identify destinations that offer the best travel value.
+## Licencia
 
-A key feature of the project is the integrated AI trip planner, which helps users describe their ideal trip through a conversation. Based on the user’s preferences, such as budget, distance, destination type, and travel style, the assistant suggests the most relevant flight deals.
+Projekt slúži na osobné a študijné účely. Nie je oficiálne spojený so spoločnosťou Ryanair DAC a Ryanair ho nijako nepodporuje.
 
-SocialStrats also includes practical tools such as a fare calendar, return flight search, saved trips, CSV export, and analytics charts. The application supports English, Slovak, and German, making it accessible to a wider range of users.
+---
 
-The project is built using ASP.NET Core with Razor Pages, C#, JavaScript, Leaflet.js, Chart.js, and the OpenAI API. It uses Ryanair’s public flight data and does not require a database, making it lightweight, stateless, and simple to run locally.
+## Popis projektu
+
+SocialStrats je viacjazyčná webová aplikácia, ktorá pomáha používateľom nájsť lacné Ryanair lety jednoduchým a vizuálnym spôsobom. Projekt sa zameriava na vyhľadávanie dostupných trás z vybraného odletového letiska, porovnanie cien pre zvolený mesiac a zobrazenie najzaujímavejších možností na živej mape.
+
+Používateľ môže vyhľadávať lety podľa rozpočtu, destinácie, mesiaca a ďalších preferencií. Výsledky nie sú zoradené iba podľa absolútnej ceny, ale aj podľa hodnoty letu, napríklad cez cenu za kilometer. Vďaka tomu sa dá jednoduchšie rozlíšiť, či je let len lacný, alebo je aj skutočne výhodný vzhľadom na vzdialenosť.
+
+Dôležitou súčasťou projektu je AI plánovač výletu. Používateľ nemusí hneď presne vedieť, kam chce letieť. Môže opísať rozpočet, približný typ destinácie, vzdialenosť alebo štýl výletu a asistent mu pomôže nájsť vhodné lety z dostupných výsledkov.
+
+Okrem toho aplikácia obsahuje kalendár cien, vyhľadanie spiatočného letu, uložené lety, CSV export a analytické grafy. Rozhranie podporuje angličtinu, slovenčinu a nemčinu, takže aplikácia je použiteľnejšia aj mimo jedného jazykového prostredia.
+
+Technicky je projekt postavený na ASP.NET Core Razor Pages, C#, JavaScripte, Leaflet.js, Chart.js a OpenAI API. Dáta čerpá z verejných Ryanair endpointov a nepoužíva vlastnú databázu, takže je ľahký, bezstavový a jednoduchý na lokálne spustenie.
+
+---
+
+## Pavol Lukačka
+
+Môj prínos v projekte bol hlavne v prvotnom návrhu aplikácie, vytvorení základného funkčného prototypu a v intenzívnom použití LLM nástrojov počas vývoja. Projekt som začal myšlienkou vytvoriť webovú aplikáciu, ktorá nebude len obyčajným zoznamom lacných leteniek, ale vizuálnym nástrojom na objavovanie lacných letov po Európe. Od začiatku som smeroval riešenie k tomu, aby používateľ videl lety na mape, vedel rýchlo porovnať cenu, vzdialenosť a hodnotu letu a aby sa z projektu dal neskôr rozvíjať širší koncept SocialStrats.
+
+Moja prompt história je uložená v priečinku `Lukacka LLM promt history`, konkrétne v súboroch `rystats-chat-history1.md` až `rystats-chat-history18.md`. Tieto záznamy dokumentujú postupný vývoj od prvého nápadu cez prototyp, napojenie na Ryanair endpointy, riešenie problémov s dátami, návrh používateľského rozhrania, animácie mapy, analytické metriky a lokalizáciu.
+
+### Prvotný návrh a smerovanie produktu
+
+Na začiatku som prišiel s ideou aplikácie v .NET, ktorá by mapovala lacné lety v Európe. Pôvodná myšlienka bola širšia, ale cez LLM diskusiu som ju zúžil na realistické MVP: mapa, výber odletového letiska, dátum alebo mesiac, základné filtrovanie a zobrazenie lacných letov. Dôležité bolo, aby aplikácia mala jasný účel a aby používateľ nemusel prechádzať klasické tabuľkové vyhľadávače letov. Hlavným princípom bolo "map-first" rozhranie, teda najskôr vizuálne pochopiť, kam sa dá lacno letieť.
+
+V ďalších promptoch som rozvíjal aj identitu projektu SocialStrats. Aplikácia mala byť nielen technickým skenerom leteniek, ale aj produktom, ktorý vie pracovať s myšlienkou cestovania, sociálneho objavovania miest a strategického porovnávania destinácií. Preto som riešil texty, hero sekciu, marketingové pomenovanie funkcií a to, aby stránka pôsobila modernejšie a použiteľnejšie pre reálneho používateľa.
+
+### Základný funkčný prototyp
+
+V prvej fáze som cez LLM nástroje vytvoril základnú verziu aplikácie. Najskôr išlo o jednoduchý single-file .NET prototyp s API endpointom, vloženým HTML a mock dátami. Následne som riešenie prepracoval do ASP.NET Core Razor Pages štruktúry s oddelením `Program.cs`, `Index.cshtml` a page modelu. Táto fáza vytvorila základ, z ktorého sa projekt ďalej rozvíjal.
+
+V prototypovej verzii som riešil:
+
+1. návrh základnej architektúry v ASP.NET Core,
+2. vytvorenie Razor Pages rozhrania,
+3. použitie Leaflet.js mapy,
+4. zobrazenie leteckých trás a markerov na mape,
+5. základný vstup pre odletové letisko a obdobie,
+6. vykresľovanie kariet s výsledkami,
+7. prvé rozdelenie backendovej a frontendovej logiky.
+
+Táto časť projektu ešte neobsahovala AI agenta ani plnohodnotné spiatočné lety. Išlo o základnú funkčnú aplikáciu, ktorá dokázala vyhľadávať a vizualizovať lacné lety jedným smerom. Neskoršie tímové rozšírenia, ako AI chatbot a práca so spiatočnými letmi, sú dokumentované v samostatných sekciách ďalších členov tímu.
+
+### Napojenie na Ryanair dáta
+
+Veľká časť môjho prínosu bola v hľadaní spôsobu, ako pracovať s reálnymi dátami. Pôvodne sa uvažovalo aj nad inými zdrojmi a nad Wizz Air API, ale počas testovania sa ukázalo, že niektoré endpointy vracajú chyby, sú limitované alebo nie sú vhodné na stabilné použitie. Preto som projekt nasmeroval na Ryanair verejné endpointy, ktoré bolo možné použiť bez vlastnej databázy a bez plateného API kľúča.
+
+V tejto časti som cez LLM postupne riešil:
+
+- získanie zoznamu Ryanair letísk,
+- získanie trás z konkrétneho odletového letiska,
+- vyhľadanie najlacnejších cien pre vybraný mesiac,
+- prácu s endpointmi typu `routes`, `cheapest` a dostupnosťami,
+- doplnenie HTTP hlavičiek pre stabilnejšie volania,
+- obmedzenie paralelných requestov kvôli riziku rate limitingu,
+- caching odpovedí, aby sa zbytočne nezaťažoval externý endpoint,
+- spracovanie prípadov, keď Ryanair JSON nevracia vždy rovnakú štruktúru.
+
+Dôležitým technickým problémom bolo, že Ryanair JSON niekedy vracal hodnoty ako string a inokedy ako objekt. Pôvodný parser preto mohol spadnúť pri `GetString()`. Tento problém som riešil cez LLM analýzu chybového logu a následnú úpravu parsera tak, aby bol tolerantnejší voči rôznym tvarom odpovede.
+
+### Mapové rozhranie a používateľský zážitok
+
+Od začiatku som chcel, aby aplikácia bola postavená okolo mapy. Preto som riešil nielen samotné body letísk, ale aj animované trasy, pohyb lietadla a celkový vizuálny dojem. V prompt histórii je vidieť viacero iterácií, kde som riešil, že lietadlo nebolo správne natočené podľa trasy alebo že pohyb mapy pri sledovaní lietadla pôsobil trhane.
+
+Výsledkom týchto iterácií bol návrh optimalizovanejšieho prístupu k animácii:
+
+- oddelenie pohybu lietadla od náročného neustáleho presúvania Leaflet mapy,
+- použitie `requestAnimationFrame`,
+- úprava rotácie lietadla podľa smeru letu,
+- zníženie trhania pri follow režime,
+- návrh GPU-friendly riešenia cez CSS transformácie,
+- zachovanie Leaflet mapy bez potreby prechodu na inú mapovú knižnicu.
+
+Okrem mapy som riešil aj lepšie karty letov. Postupne som dopĺňal zobrazenie názvu letiska namiesto samotného IATA kódu, cenu za kilometer, vzdialenosť, dátum letu a neskôr aj návrh na zobrazenie času odletu a príletu, ak je táto informácia dostupná v dátach. Tým sa karta letu posunula z jednoduchého technického výpisu na praktickejší rozhodovací prvok.
+
+### Analytické a porovnávacie prvky
+
+Mojou snahou bolo, aby aplikácia neukazovala iba najlacnejšiu cenu, ale aby pomáhala porovnávať hodnotu letu. Preto som do návrhu zaviedol metriky ako vzdialenosť letu a cena za kilometer. Táto metrika pomáha používateľovi pochopiť, či je let výhodný nielen podľa absolútnej ceny, ale aj podľa toho, akú vzdialenosť za danú cenu získa.
+
+V prompt histórii som riešil aj analytické rozšírenia:
+
+- price histogram,
+- scatter graf hodnoty voči vzdialenosti,
+- priemerné a mediánové ceny,
+- zvýraznenie najvýhodnejších letov,
+- textové vysvetlenie, prečo je konkrétny let dobrý deal,
+- prepojenie štatistík s mapou a kartami výsledkov.
+
+Tieto prvky posúvajú projekt bližšie k zadaniu funkčného softvérového riešenia, pretože aplikácia nie je len UI nad API. Pridáva vlastnú interpretačnú vrstvu nad dátami.
+
+### Lokalizácia a produktová komunikácia
+
+Ďalšia časť môjho prínosu bola v návrhu viacjazyčnosti a lepšej používateľskej komunikácie. V prompt histórii som riešil rozdelenie stránky podľa kultúry, použitie `SetLanguage` endpointu, cookie pre uloženie výberu jazyka, query string prepínanie a suffix Razor views pre jazykové verzie.
+
+Zároveň som cez LLM iteroval texty v aplikácii tak, aby boli zrozumiteľnejšie a viac orientované na používateľa. Riešil som napríklad, ako lepšie vysvetliť map-first prístup, ako pomenovať výhody aplikácie, ako zdôrazniť zdieľanie a ako priznať limitáciu, že základná verzia pracovala primárne s Ryanair dátami.
+
+### Použitie LLM nástrojov v mojej časti
+
+LLM nástroje som nepoužíval iba na jednorazové vygenerovanie kódu. Používal som ich ako vývojového partnera počas celého návrhu a implementácie. V prompt histórii je vidieť, že som postupoval iteratívne: najskôr som zadal produktový cieľ, potom som zužoval rozsah, riešil chyby, pýtal si celé kopírovateľné bloky kódu, analyzoval runtime chyby, upravoval dizajn a neskôr dopĺňal dokumentáciu.
+
+LLM som využil hlavne na:
+
+- návrh architektúry aplikácie,
+- generovanie prvého prototypu,
+- refaktoring na Razor Pages,
+- návrh backend endpointov,
+- hľadanie vhodného zdroja dát,
+- analýzu problémov s Ryanair endpointmi,
+- návrh robustnejšieho JSON parsovania,
+- úpravu frontendového rozhrania,
+- zlepšenie animácií v Leaflet mape,
+- návrh analytických komponentov,
+- návrh lokalizačného mechanizmu,
+- tvorbu vývojových poznámok a README častí.
+
+Najväčší prínos LLM bol v rýchlosti iterovania. Vedel som rýchlo porovnať viac možností, nechať si vysvetliť chybu, dostať návrh opravy a následne ho prispôsobiť projektu. Zároveň sa ukázali aj limity: niektoré navrhnuté API endpointy neboli stabilné, časť kódu bolo potrebné overovať ručne a pri externých službách bolo nutné počítať s rate limitingom, zmenou formátu dát a neoficiálnym charakterom Ryanair API.
+
+### Zhrnutie môjho prínosu
+
+Môj prínos možno zhrnúť tak, že som vytvoril základnú funkčnú kostru aplikácie a určil jej produktový smer. Priniesol som myšlienku mapového vyhľadávania lacných letov, navrhol prvé MVP, vytvoril základný .NET/Razor prototyp, napojil aplikáciu na Ryanair dáta, riešil nefunkčné API volania, rozvíjal mapové UI, doplnil hodnotové metriky a pracoval na lepšej používateľskej prezentácii aplikácie.
+
+Základná verzia, ktorú som budoval, bola funkčná aplikácia na vyhľadávanie a vizualizáciu jednosmerných Ryanair letov. Neobsahovala ešte AI agenta ani finálne riešenie spiatočných letov. Tieto rozšírenia vznikli v ďalších tímových častiach projektu a sú popísané v samostatných sekciách README. Moja časť je dôležitá najmä preto, že vytvorila jadro aplikácie, na ktoré mohli nadviazať ďalší členovia tímu.
 
 ---
 
@@ -384,5 +498,47 @@ Pridal som tieto veci
 ---
 
 V adresári RYSTATS2V\SocialStrats\SocialStrats sú dve súbory ktoré dokumentuju môj prínos AI chatbot (AGENT_CHATBOT_DOCUMENTATION, AI_AGENT_HANDOFF_SK).
+
+---
+
+## Ako projekt spĺňa zadanie
+
+Táto časť zhŕňa, ako projekt SocialStrats napĺňa požiadavky zadania k funkčnému softvérovému riešeniu s intenzívnym využitím LLM nástrojov.
+
+| Požiadavka zadania | Splnenie v projekte |
+|---|---|
+| Funkčné softvérové riešenie | Projekt obsahuje spustiteľnú ASP.NET Core aplikáciu na vyhľadávanie, filtrovanie a vizualizáciu lacných Ryanair letov. Používateľ si vyberá odletové letisko, mesiac, rozpočet a výsledky vidí na mape aj v kartách. |
+| Backendová časť | Backend je realizovaný v `Program.cs` pomocou Minimal API endpointov. Rieši získavanie letísk, trás, cien, kalendárových dát, cacheovanie, rate limiting a komunikáciu s externým Ryanair API. |
+| Frontendová časť | Frontend je postavený na ASP.NET Core Razor Pages. Používa Leaflet.js na mapu, Chart.js na analytické grafy a vlastný JavaScript na filtrovanie, animácie, uložené lety, exporty a prácu s výsledkami. |
+| Jasný účel aplikácie | Aplikácia rieši konkrétny prípad použitia: rýchle nájdenie výhodných Ryanair letov z vybraného odletového letiska a ich porovnanie podľa ceny, vzdialenosti a hodnoty za kilometer. |
+| Git repozitár a štruktúra | Projekt je odovzdaný ako Git repozitár so zdrojovým kódom, README dokumentáciou a samostatnými priečinkami s prompt históriou. Zdrojový kód aplikácie je uložený v adresári `SocialStrats`. |
+| Tímová spolupráca | README obsahuje samostatné sekcie pre členov tímu a ich prínos. Pavol Lukačka dokumentuje návrh a základ aplikácie, Stanislav Olbert dokumentuje saved trips, fare calendar a return flight funkcionalitu, Serhii Vielkin dokumentuje AI chatbota. |
+| Použitie LLM pri vývoji | LLM nástroje boli použité pri návrhu architektúry, generovaní prvého prototypu, refaktoringu, debugovaní, návrhu UI, dokumentovaní, tvorbe prompt history a pri implementácii AI chatbota. |
+| LLM ako súčasť riešenia | Súčasťou výsledného projektu je AI trip planner napojený na OpenAI API. Chatbot pomáha používateľovi vybrať vhodné lety podľa rozpočtu, vzdialenosti a preferencií. |
+| Dokumentácia | README obsahuje popis projektu, technológie, API endpointy, návod na spustenie, obmedzenia, caching, lokalizáciu a individuálne prínosy členov tímu. Ďalšie dokumenty k AI agentovi sú v `AGENT_CHATBOT_DOCUMENTATION` a `AI_AGENT_HANDOFF_SK`. |
+| Reflexia LLM nástrojov | Projekt obsahuje prompt history priečinky a textové zhodnotenie toho, kde LLM pomohli, kde mali limity a čo bolo potrebné overovať ručne. |
+
+Z pohľadu zadania projekt spĺňa jadro požiadavky: ide o funkčné softvérové riešenie s backendom, frontendovou aplikáciou, mapovou vizualizáciou, externým dátovým zdrojom, analytickými prvkami a vedomým využitím LLM nástrojov počas vývoja aj priamo vo výslednej funkcionalite.
+
+---
+
+## Spoločná reflexia využitia LLM nástrojov a limitov
+
+LLM nástroje boli v projekte použité intenzívne a nie iba formálne. Pomohli pri prvotnom návrhu aplikácie, pri rýchlom vytvorení prototypu, pri úprave architektúry, pri písaní backendových endpointov, pri návrhu frontendového rozhrania, pri debugovaní chýb, pri tvorbe dokumentácie a pri implementácii AI chatbota. Vďaka nim bolo možné rýchlo porovnávať viac riešení, iterovať dizajn a vysvetľovať chyby v kóde.
+
+Zároveň sa počas práce ukázalo, že LLM nástroje nevedia nahradiť overovanie funkčnosti. Viackrát navrhli endpointy alebo technické riešenia, ktoré vyzerali správne, ale v praxi neboli stabilné alebo nefungovali podľa očakávania. Pri externých API bolo potrebné kontrolovať reálne odpovede, spracovať chybové stavy a upravovať parsery podľa skutočného JSON formátu.
+
+Najdôležitejšie limity, ktoré sme počas projektu pozorovali:
+
+- Niektoré LLM návrhy pracovali s API endpointmi, ktoré neboli stabilné alebo neboli vhodné na dlhodobé použitie.
+- Ryanair API je neoficiálne a projekt s ním nie je nijako formálne prepojený. Endpointy sa môžu zmeniť, môžu byť limitované alebo dočasne nedostupné.
+- Niektoré časti kódu bolo potrebné ručne otestovať, pretože LLM síce vedelo navrhnúť riešenie, ale nevedelo garantovať správanie reálnej služby.
+- Pri používateľskom rozhraní bolo potrebných viac iterácií. Prvé návrhy neboli vždy dostatočne responzívne, prehľadné alebo použiteľné na mobile.
+- Pri mapových animáciách sa ukázalo, že všeobecný návrh nestačí. Bolo potrebné riešiť konkrétne správanie Leaflet mapy, výkon prehliadača a plynulosť animácie.
+- AI zrýchlila prototypovanie a dokumentáciu, ale nenahradila testovanie, kontrolu dát, čítanie chybových hlášok a finálne rozhodovanie vývojára.
+
+Najväčším prínosom LLM bolo zrýchlenie vývojového cyklu. Namiesto toho, aby sa každá časť riešila od nuly, sme mohli cez promptovanie rýchlo vytvoriť prvú verziu, následne ju kriticky skontrolovať, upraviť a prispôsobiť reálnemu projektu. Tento spôsob práce sa ukázal ako veľmi užitočný hlavne pri prototype, refaktoringu, vysvetľovaní chýb a písaní dokumentácie.
+
+Z pohľadu skúsenosti tímu bolo dôležité pochopiť, že dobré používanie LLM nie je iba zadanie krátkeho príkazu. Kvalitný výsledok vznikal najmä vtedy, keď sme vedeli presne opísať problém, priložiť chybové hlášky, ukázať existujúci kód, pomenovať obmedzenia a následne výstup LLM kriticky overiť. Práve táto iteratívna práca bola jedným z hlavných prínosov projektu.
 
 ---
