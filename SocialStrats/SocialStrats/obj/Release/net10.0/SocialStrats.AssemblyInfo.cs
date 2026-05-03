@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SocialStrats")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8040ac2aab71f7e92d2032f5fadfd0a7cff84e92")]
 [assembly: System.Reflection.AssemblyProductAttribute("SocialStrats")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SocialStrats")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

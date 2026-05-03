@@ -184,8 +184,8 @@ Be concise and practical.
 
 Goals:
 1) If essential fields are missing, ask short follow-up questions.
-2) If deals are provided, rank by fit to brief (not only by lowest price).
-3) Explain tradeoffs: cheap pick vs smart value.
+2) If deals are provided, rank by absolute lowest price when the user explicitly asks for the cheapest flights.
+3) Otherwise rank by fit to brief and explain tradeoffs: cheap pick vs smart value.
 
 Important:
 - Destination is optional. If user has no fixed destination, propose best-fit options from available deals.
@@ -241,6 +241,30 @@ static bool DealMatchesDestination(DealResult deal, AgentTravelContext context)
     }
 
     return false;
+}
+
+static bool WantsCheapestFirst(AgentTravelContext context, IEnumerable<AgentChatMessage>? messages)
+{
+    var parts = new List<string?>();
+    parts.Add(context.Notes);
+    parts.Add(context.DestinationIdea);
+    parts.Add(context.DestinationSearch);
+
+    if (messages is not null)
+        parts.AddRange(messages.Select(m => m.Content));
+
+    var text = string.Join(" ", parts.Where(p => !string.IsNullOrWhiteSpace(p))).ToLowerInvariant();
+    if (string.IsNullOrWhiteSpace(text))
+        return false;
+
+    var markers = new[]
+    {
+        "najlac", "najlacne", "najlacnej", "lacne", "lacny", "lacna",
+        "cheap", "cheapest", "lowest price", "low price",
+        "billig", "guenstig", "günstig"
+    };
+
+    return markers.Any(marker => text.Contains(marker));
 }
 
 static string BuildDealReason(DealResult deal, AgentTravelContext context, string lang)
@@ -1104,18 +1128,19 @@ static async Task<List<DealResult>> FetchAgentDealsAsync(
     // Fetch a wider envelope so the agent can still propose alternatives when strict budget has no hits.
     var budget = Math.Clamp(Math.Max(requestedBudget + 120, requestedBudget * 2), 120, 700);
     var maxDeals = context.MaxDeals is null ? 50 : Math.Clamp(context.MaxDeals.Value * 2, 10, 120);
+    var dataLang = "en"; // Ryanair locate data is most reliable in English; UI language stays separate.
 
     var query = $"origin={Uri.EscapeDataString(origin)}" +
                 $"&month={Uri.EscapeDataString(month)}" +
                 $"&currency={Uri.EscapeDataString(currency)}" +
                 $"&maxBudget={budget}" +
                 $"&maxDeals={maxDeals}" +
-                $"&lang={Uri.EscapeDataString(lang)}";
+                $"&lang={Uri.EscapeDataString(dataLang)}";
 
     var host = httpContext.Request.Host.Host;
-    var primaryBaseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}";
-
     var isLocalHost = host.Equals("localhost", StringComparison.OrdinalIgnoreCase) || host.Equals("127.0.0.1");
+    var requestScheme = isLocalHost ? httpContext.Request.Scheme : "https";
+    var primaryBaseUrl = $"{requestScheme}://{httpContext.Request.Host}";
     var candidateBaseUrls = new List<string> { primaryBaseUrl };
     if (isLocalHost)
         candidateBaseUrls.Add($"https://{host}:7043");
@@ -1287,12 +1312,14 @@ app.MapPost("/api/agent/chat", async (
             DealShortlist: Array.Empty<AgentDealCard>()));
     }
 
-    var candidateDeals = deals
+    var cheapestFirst = WantsCheapestFirst(context, request.Messages);
+    var filteredDeals = deals
         .Where(d => context.MaxDistanceKm is null || d.DistanceKm <= context.MaxDistanceKm.Value)
-        .Where(d => context.MinDistanceKm is null || d.DistanceKm >= context.MinDistanceKm.Value)
-        .OrderBy(d => d.PricePerKm)
-        .ThenBy(d => d.Price)
-        .ToList();
+        .Where(d => context.MinDistanceKm is null || d.DistanceKm >= context.MinDistanceKm.Value);
+
+    var candidateDeals = cheapestFirst
+        ? filteredDeals.OrderBy(d => d.Price).ThenBy(d => d.PricePerKm).ToList()
+        : filteredDeals.OrderBy(d => d.PricePerKm).ThenBy(d => d.Price).ToList();
 
     var budgetFilteredDeals = candidateDeals
         .Where(d => context.MaxBudget is null || d.Price <= context.MaxBudget.Value)
