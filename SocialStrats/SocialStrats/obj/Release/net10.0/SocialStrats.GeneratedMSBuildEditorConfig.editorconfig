@@ -11,53 +11,53 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = SocialStrats
 build_property.RootNamespace = SocialStrats
-build_property.ProjectDir = C:\Users\mepla\OneDrive\Documents\SocialStrats\SocialStrats\SocialStrats\
+build_property.ProjectDir = C:\Users\mepla\OneDrive\Documents\SocialStrats\NestStats2\NestStats2\RYSTATS2_new\SocialStrats\SocialStrats\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\mepla\OneDrive\Documents\SocialStrats\SocialStrats\SocialStrats
+build_property.MSBuildProjectDirectory = C:\Users\mepla\OneDrive\Documents\SocialStrats\NestStats2\NestStats2\RYSTATS2_new\SocialStrats\SocialStrats
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/mepla/OneDrive/Documents/SocialStrats/SocialStrats/SocialStrats/Pages/Error.cshtml]
+[C:/Users/mepla/OneDrive/Documents/SocialStrats/NestStats2/NestStats2/RYSTATS2_new/SocialStrats/SocialStrats/Pages/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/mepla/OneDrive/Documents/SocialStrats/SocialStrats/SocialStrats/Pages/Index.cshtml]
+[C:/Users/mepla/OneDrive/Documents/SocialStrats/NestStats2/NestStats2/RYSTATS2_new/SocialStrats/SocialStrats/Pages/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/mepla/OneDrive/Documents/SocialStrats/SocialStrats/SocialStrats/Pages/Index.de.cshtml]
+[C:/Users/mepla/OneDrive/Documents/SocialStrats/NestStats2/NestStats2/RYSTATS2_new/SocialStrats/SocialStrats/Pages/Index.de.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXguZGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/mepla/OneDrive/Documents/SocialStrats/SocialStrats/SocialStrats/Pages/Index.sk.cshtml]
+[C:/Users/mepla/OneDrive/Documents/SocialStrats/NestStats2/NestStats2/RYSTATS2_new/SocialStrats/SocialStrats/Pages/Index.sk.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXguc2suY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/mepla/OneDrive/Documents/SocialStrats/SocialStrats/SocialStrats/Pages/Privacy.cshtml]
+[C:/Users/mepla/OneDrive/Documents/SocialStrats/NestStats2/NestStats2/RYSTATS2_new/SocialStrats/SocialStrats/Pages/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpdmFjeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/mepla/OneDrive/Documents/SocialStrats/SocialStrats/SocialStrats/Pages/SetLanguage.cshtml]
+[C:/Users/mepla/OneDrive/Documents/SocialStrats/NestStats2/NestStats2/RYSTATS2_new/SocialStrats/SocialStrats/Pages/SetLanguage.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2V0TGFuZ3VhZ2UuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/mepla/OneDrive/Documents/SocialStrats/SocialStrats/SocialStrats/Pages/Shared/_ValidationScriptsPartial.cshtml]
+[C:/Users/mepla/OneDrive/Documents/SocialStrats/NestStats2/NestStats2/RYSTATS2_new/SocialStrats/SocialStrats/Pages/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/mepla/OneDrive/Documents/SocialStrats/SocialStrats/SocialStrats/Pages/_ViewImports.cshtml]
+[C:/Users/mepla/OneDrive/Documents/SocialStrats/NestStats2/NestStats2/RYSTATS2_new/SocialStrats/SocialStrats/Pages/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/mepla/OneDrive/Documents/SocialStrats/SocialStrats/SocialStrats/Pages/_ViewStart.cshtml]
+[C:/Users/mepla/OneDrive/Documents/SocialStrats/NestStats2/NestStats2/RYSTATS2_new/SocialStrats/SocialStrats/Pages/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/mepla/OneDrive/Documents/SocialStrats/SocialStrats/SocialStrats/Pages/Shared/_Layout.cshtml]
+[C:/Users/mepla/OneDrive/Documents/SocialStrats/NestStats2/NestStats2/RYSTATS2_new/SocialStrats/SocialStrats/Pages/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-pa8ukqci9n

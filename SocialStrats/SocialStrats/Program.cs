@@ -184,8 +184,8 @@ Be concise and practical.
 
 Goals:
 1) If essential fields are missing, ask short follow-up questions.
-2) If deals are provided, rank by fit to brief (not only by lowest price).
-3) Explain tradeoffs: cheap pick vs smart value.
+2) If deals are provided, rank by absolute lowest price when the user explicitly asks for the cheapest flights.
+3) Otherwise rank by fit to brief and explain tradeoffs: cheap pick vs smart value.
 
 Important:
 - Destination is optional. If user has no fixed destination, propose best-fit options from available deals.
@@ -241,6 +241,30 @@ static bool DealMatchesDestination(DealResult deal, AgentTravelContext context)
     }
 
     return false;
+}
+
+static bool WantsCheapestFirst(AgentTravelContext context, IEnumerable<AgentChatMessage>? messages)
+{
+    var parts = new List<string?>();
+    parts.Add(context.Notes);
+    parts.Add(context.DestinationIdea);
+    parts.Add(context.DestinationSearch);
+
+    if (messages is not null)
+        parts.AddRange(messages.Select(m => m.Content));
+
+    var text = string.Join(" ", parts.Where(p => !string.IsNullOrWhiteSpace(p))).ToLowerInvariant();
+    if (string.IsNullOrWhiteSpace(text))
+        return false;
+
+    var markers = new[]
+    {
+        "najlac", "najlacne", "najlacnej", "lacne", "lacny", "lacna",
+        "cheap", "cheapest", "lowest price", "low price",
+        "billig", "guenstig", "günstig"
+    };
+
+    return markers.Any(marker => text.Contains(marker));
 }
 
 static string BuildDealReason(DealResult deal, AgentTravelContext context, string lang)
@@ -889,7 +913,8 @@ static string BuildAgentDealsMessage(
     AgentTravelContext context,
     string brief,
     List<DealResult> deals,
-    string lang)
+    string lang,
+    bool cheapestFirst)
 {
     var isSk = lang == "sk";
     var isDe = lang == "de";
@@ -904,14 +929,19 @@ static string BuildAgentDealsMessage(
         return $"Your brief is ready ({brief}), but I could not find matching flights this month within your budget or distance. Try increasing budget/distance or changing month.";
     }
 
-    var lines = new List<string>
-    {
-        isSk
+    var headline = cheapestFirst
+        ? (isSk
+            ? $"Našiel som {deals.Count} najlacnejších možností podľa briefu: {brief}."
+            : isDe
+                ? $"Ich habe {deals.Count} guenstigste Optionen fuer deinen Brief gefunden: {brief}."
+                : $"I found {deals.Count} cheapest options for your brief: {brief}.")
+        : (isSk
             ? $"Našiel som {deals.Count} najvhodnejších možností podľa briefu: {brief}."
             : isDe
                 ? $"Ich habe {deals.Count} Optionen gefunden, die am besten zu deinem Brief passen: {brief}."
-                : $"I found {deals.Count} best-fit options for your brief: {brief}."
-    };
+                : $"I found {deals.Count} best-fit options for your brief: {brief}.");
+
+    var lines = new List<string> { headline };
 
     for (var i = 0; i < deals.Count; i++)
     {
@@ -944,13 +974,14 @@ static async Task<List<DealResult>> FetchAgentDealsAsync(
     // Fetch a wider envelope so the agent can still propose alternatives when strict budget has no hits.
     var budget = Math.Clamp(Math.Max(requestedBudget + 120, requestedBudget * 2), 120, 700);
     var maxDeals = context.MaxDeals is null ? 50 : Math.Clamp(context.MaxDeals.Value * 2, 10, 120);
+    var dataLang = "en"; // Ryanair locate data is most reliable in English; UI language stays separate.
 
     var query = $"origin={Uri.EscapeDataString(origin)}" +
                 $"&month={Uri.EscapeDataString(month)}" +
                 $"&currency={Uri.EscapeDataString(currency)}" +
                 $"&maxBudget={budget}" +
                 $"&maxDeals={maxDeals}" +
-                $"&lang={Uri.EscapeDataString(lang)}";
+                $"&lang={Uri.EscapeDataString(dataLang)}";
 
     var baseUrl = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}";
     var url = $"{baseUrl}/api/ryanair/search?{query}";
@@ -1071,12 +1102,14 @@ app.MapPost("/api/agent/chat", async (
             DealShortlist: Array.Empty<AgentDealCard>()));
     }
 
-    var candidateDeals = deals
+    var cheapestFirst = WantsCheapestFirst(context, request.Messages);
+    var filteredDeals = deals
         .Where(d => context.MaxDistanceKm is null || d.DistanceKm <= context.MaxDistanceKm.Value)
-        .Where(d => context.MinDistanceKm is null || d.DistanceKm >= context.MinDistanceKm.Value)
-        .OrderBy(d => d.PricePerKm)
-        .ThenBy(d => d.Price)
-        .ToList();
+        .Where(d => context.MinDistanceKm is null || d.DistanceKm >= context.MinDistanceKm.Value);
+
+    var candidateDeals = cheapestFirst
+        ? filteredDeals.OrderBy(d => d.Price).ThenBy(d => d.PricePerKm).ToList()
+        : filteredDeals.OrderBy(d => d.PricePerKm).ThenBy(d => d.Price).ToList();
 
     var budgetFilteredDeals = candidateDeals
         .Where(d => context.MaxBudget is null || d.Price <= context.MaxBudget.Value)
@@ -1129,7 +1162,7 @@ app.MapPost("/api/agent/chat", async (
     }
 
     var topDeals = constrainedDeals.Take(5).ToList();
-    var finalMessage = BuildAgentDealsMessage(context, brief, topDeals, lang);
+    var finalMessage = BuildAgentDealsMessage(context, brief, topDeals, lang, cheapestFirst);
     var finalStatus = topDeals.Count > 0 ? "ready-with-deals" : "no-deals";
     var shortlist = BuildAgentDealShortlist(topDeals, context, lang);
     var llmWithDeals = !string.IsNullOrWhiteSpace(openAiApiKey)

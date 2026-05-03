@@ -904,12 +904,12 @@
             transform: scale(1.2);
         }
 
-        /* Developer card */
+        /* Developers card */
         .developer-card {
             background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
             border: 2px solid #bfdbfe;
             border-radius: 24px;
-            padding: 36px;
+            padding: 30px;
             position: relative;
             overflow: hidden;
             transition: all 0.4s ease;
@@ -952,7 +952,7 @@
             display: flex;
             align-items: center;
             gap: 14px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             position: relative;
             z-index: 1;
         }
@@ -986,11 +986,105 @@
             color: #3b82f6;
             font-weight: 600;
             font-size: 14px;
-            margin-bottom: 28px;
+            margin-bottom: 22px;
             position: relative;
             z-index: 1;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        .developer-list {
+            display: grid;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .developer-person {
+            display: grid;
+            grid-template-columns: 42px 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(191, 219, 254, 0.9);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+            transition: all 0.25s ease;
+        }
+
+        .developer-person:hover {
+            transform: translateX(4px);
+            border-color: #93c5fd;
+            background: rgba(255, 255, 255, 0.92);
+        }
+
+        .dev-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6 0%, #22c55e 100%);
+            box-shadow: 0 8px 18px rgba(59, 130, 246, 0.24);
+        }
+
+        .developer-person:nth-child(2) .dev-avatar {
+            background: linear-gradient(135deg, #22c55e 0%, #14b8a6 100%);
+        }
+
+        .developer-person:nth-child(3) .dev-avatar {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+        }
+
+        .dev-person-name {
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .dev-person-role {
+            margin-top: 3px;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .dev-github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 11px;
+            border-radius: 999px;
+            color: #2563eb;
+            background: rgba(219, 234, 254, 0.8);
+            border: 1px solid rgba(147, 197, 253, 0.75);
+            font-size: 12px;
+            font-weight: 800;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .dev-github-link:hover {
+            color: #fff;
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.24);
+        }
+
+        @@media (max-width: 520px) {
+            .developer-person {
+                grid-template-columns: 42px 1fr;
+            }
+
+            .dev-github-link {
+                grid-column: 1 / -1;
+                justify-content: center;
+            }
         }
 
         .social-links {
@@ -1981,22 +2075,48 @@
                 </div>
             </div>
 
-            <!-- Developer -->
+            <!-- Developers -->
             <div class="footer-section">
                 <div class="developer-card">
                     <h4>
-                        <span class="dev-badge">👨‍💻</span>
-                        <span class="dev-name">Pavol Lukačka</span>
+                        <span class="dev-badge">👥</span>
+                        <span class="dev-name">@I18n.T(lang, "Developers", "Vývojári", "Entwickler")</span>
                     </h4>
-                    <div class="dev-role">@I18n.T(lang, "Founder & Developer", "Zakladateľ & vývojár", "Gründer & Entwickler")</div>
+                    <div class="dev-role">@I18n.T(lang, "Built by the project team", "Vytvorené projektovým tímom", "Erstellt vom Projektteam")</div>
 
-                    <div class="social-links">
-                        <a href="https://github.com/PavolLukacka..." target="_blank" rel="noopener noreferrer" class="social-link">
-                            <span class="icon">💻</span> @I18n.T(lang, "Visit my GitHub", "Navštív môj GitHub", "Mein GitHub besuchen")
-                        </a>
-                        <a href="https://github.com/PavolLukacka..." target="_blank" rel="noopener noreferrer" class="social-link">
-                            <span class="icon">☕</span> @I18n.T(lang, "Buy me a coffee❤️", "Kúp mi kávu❤️", "Spendier mir einen Kaffee❤️")
-                        </a>
+                    <div class="developer-list">
+                        <div class="developer-person">
+                            <span class="dev-avatar">PV</span>
+                            <div>
+                                <div class="dev-person-name">Pavol Lukačka</div>
+                                <div class="dev-person-role">@I18n.T(lang, "Core prototype, Ryanair data, map UI", "Základný prototyp, Ryanair dáta, mapové UI", "Prototyp, Ryanair-Daten, Karten-UI")</div>
+                            </div>
+                            <a href="https://github.com/PavolLukacka" target="_blank" rel="noopener noreferrer" class="dev-github-link">
+                                GitHub
+                            </a>
+                        </div>
+
+                        <div class="developer-person">
+                            <span class="dev-avatar">SO</span>
+                            <div>
+                                <div class="dev-person-name">Stano Olbert</div>
+                                <div class="dev-person-role">@I18n.T(lang, "Saved trips, calendar, return flights", "Uložené lety, kalendár, spiatočné lety", "Gespeicherte Reisen, Kalender, Rückflüge")</div>
+                            </div>
+                            <a href="https://github.com/PhoeniX9878" target="_blank" rel="noopener noreferrer" class="dev-github-link">
+                                GitHub
+                            </a>
+                        </div>
+
+                        <div class="developer-person">
+                            <span class="dev-avatar">SV</span>
+                            <div>
+                                <div class="dev-person-name">Serhii Vielkin</div>
+                                <div class="dev-person-role">@I18n.T(lang, "AI trip planner and chatbot", "AI plánovač výletu a chatbot", "KI-Reiseplaner und Chatbot")</div>
+                            </div>
+                            <a href="https://github.com/Velkser" target="_blank" rel="noopener noreferrer" class="dev-github-link">
+                                GitHub
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2005,7 +2125,7 @@
         <!-- Bottom -->
         <div class="footer-bottom">
             <div class="copyright">
-                &copy; @DateTime.UtcNow.Year <strong>SocialStrats</strong> • @I18n.T(lang, "Built by", "Vytvoril", "Erstellt von") <strong>Pavol Lukačka</strong>
+                &copy; @DateTime.UtcNow.Year <strong>SocialStrats</strong> • @I18n.T(lang, "Built by", "Vytvorili", "Erstellt von") <strong>Pavol Lukačka, Stano Olbert & Serhii Vielkin</strong>
             </div>
 
             <div class="tech-stack">
