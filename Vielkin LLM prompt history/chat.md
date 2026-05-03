@@ -1,5 +1,5 @@
 # Strucna historia chatu
-
+# Bol použitý GitHub Copilot, modely GPT-5 na písanie dokumentácie a úvah a model Claude Opus 4.7 na písanie kódu.
 ## 1) Co bolo poziadovane a co bolo dodane
 
 1. Napojit a overit AI chat s OpenAI + Ryanair.
