@@ -1,0 +1,7 @@
+C:\Users\mepla\OneDrive\Documents\SocialStrats\NestStats2\NestStats2\New rystats\RYSTATS2_new\SocialStrats\publish\SocialStrats.exe
+C:\Users\mepla\OneDrive\Documents\SocialStrats\NestStats2\NestStats2\New rystats\RYSTATS2_new\SocialStrats\publish\appsettings.Development.json
+C:\Users\mepla\OneDrive\Documents\SocialStrats\NestStats2\NestStats2\New rystats\RYSTATS2_new\SocialStrats\publish\appsettings.json
+C:\Users\mepla\OneDrive\Documents\SocialStrats\NestStats2\NestStats2\New rystats\RYSTATS2_new\SocialStrats\publish\SocialStrats.dll
+C:\Users\mepla\OneDrive\Documents\SocialStrats\NestStats2\NestStats2\New rystats\RYSTATS2_new\SocialStrats\publish\SocialStrats.deps.json
+C:\Users\mepla\OneDrive\Documents\SocialStrats\NestStats2\NestStats2\New rystats\RYSTATS2_new\SocialStrats\publish\SocialStrats.runtimeconfig.json
+C:\Users\mepla\OneDrive\Documents\SocialStrats\NestStats2\NestStats2\New rystats\RYSTATS2_new\SocialStrats\publish\SocialStrats.pdb

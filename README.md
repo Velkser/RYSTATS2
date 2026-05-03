@@ -6,9 +6,13 @@ Aplikácia je dostupná online na adrese:
 
 [https://rystats.azurewebsites.net/](https://rystats.azurewebsites.net/)
 
-Nasadená verzia obsahuje funkčný skener letov, mapu, filtrovanie, kalendár cien, uložené lety a ďalšie časti aplikácie. AI chat asistent však v tejto verzii není aktívny, pretože na jeho spustenie je potrebné doplniť platný `OPENAI_API_KEY` v nastaveniach prostredia.
+Nasadená verzia obsahuje funkčný skener letov, AI chat, mapu, filtrovanie, kalendár cien, uložené lety a ďalšie časti aplikácie. 
+
+Github verzia :  Tu AI chat asistent není aktívny, pretože na jeho spustenie je potrebné doplniť platný `OPENAI_API_KEY` v nastaveniach prostredia.
 
 Bez OpenAI kľúča zostáva aplikácia použiteľná na vyhľadávanie a porovnávanie letov. Obmedzená je iba AI časť.
+
+Oporúčame pozrieť video pre pochopenie AI agenta: VIDEO - https://drive.google.com/file/d/1_5iTskNsZ1itEGE9Nos_Eo2rBByxJ2X_/view?usp=sharing -  Serhii
 
 
 SocialStrats je webová aplikácia na hľadanie lacných letov Ryanair. Používateľ si vyberie odletové letisko, mesiac a rozpočet, aplikácia prejde dostupné trasy a výsledky zobrazí na interaktívnej mape. Okrem klasického zoznamu letov ukazuje aj hodnotu letu cez cenu za kilometer a ponúka AI asistenta, ktorý pomáha nájsť vhodnú destináciu podľa preferencií.
